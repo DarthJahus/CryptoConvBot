@@ -84,6 +84,7 @@ def api_convert_coin(args, inline_call):
 			print("Error from api_convert_coin() while trying to add: Cryptonator")
 		# Getting info from source
 		results = {}
+		results_inline = {}
 		bSUCCESS = False
 		for source in sources:
 			if source["success"] != True:
@@ -111,14 +112,20 @@ def api_convert_coin(args, inline_call):
 				else:
 					_price = "%.8f" % _price
 				_message = "`%s = %s %s` %s *%s*" % (_unit_source, _price, _unit_target, emoji.emojize(':rocket:'), source["exchange"])
-				_message_inline = "%s = %s %s" % (_unit_source, _price, _unit_target)
+
+				results[source["exchange"]] = _message
+
+				# contenu du message (description) des éléments Inline
 				if inline_call==True:
-					results[source["exchange"]] = _message
-				else:
-					results[source["exchange"]] = _message_inline
+					_message_inline = "%s = %s %s" % (_unit_source, _price, _unit_target)
+					results_inline[source["exchange"]] = _message_inline
+
 				bSUCCESS = True
 		if bSUCCESS:
-			return {"success": True, "result": results}
+			if inline_call==True:
+				return {"success": True, "result": results, "result_inline": results_inline}
+			else:
+				return {"success": True, "result": results}
 		else:
 			return {"success": False, "result": "All sources returned an error."}
 
@@ -126,7 +133,7 @@ def api_convert_coin(args, inline_call):
 def Converter_Convert(args):
 	if len(args) in [2, 3]:
 
-		results_tmp = api_convert_coin(args)
+		results_tmp = api_convert_coin(args, inline_call=False)
 		results = []
 
 		if results_tmp["success"] == False:

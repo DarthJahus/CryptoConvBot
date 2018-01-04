@@ -4,7 +4,7 @@
 # -----------------------------
 
 import requests
-
+import emoji
 
 # CONSTANTES
 
@@ -59,7 +59,8 @@ def api_cryptocompare(coin_0, coin_1):
 	except:
 		return {"success": False, "error": "Error from api_cryptocompare()"}
 
-def api_convert_coin(args):
+def api_convert_coin(args, inline_call):
+	print args
 	if (len(args) > 3 or len(args) < 2):
 		return {"success": False, "result": None}
 	else:
@@ -73,12 +74,12 @@ def api_convert_coin(args):
 				print("** api_convert_coin(): Error while trying to get the value of args[0] (args[0] = %s)" % args[0])
 		try:
 			if len(args) == 3:
-				sources.append(api_cryptonator(args[1].upper(), args[2].upper()))
 				sources.append(api_cryptocompare(args[1].upper(), args[2].upper()))
+				sources.append(api_cryptonator(args[1].upper(), args[2].upper()))
 			else:
 				# len(args) == 2
-				sources.append(api_cryptonator(args[0].upper(), args[1].upper()))
 				sources.append(api_cryptocompare(args[0].upper(), args[1].upper()))
+				sources.append(api_cryptonator(args[0].upper(), args[1].upper()))
 		except:
 			print("Error from api_convert_coin() while trying to add: Cryptonator")
 		# Getting info from source
@@ -109,8 +110,12 @@ def api_convert_coin(args):
 					_price = "%i" % int(_price * 1e+8)
 				else:
 					_price = "%.8f" % _price
-				_message = "`%s = %s %s` *[%s]*" % (_unit_source, _price, _unit_target, source["exchange"])
-				results[source["exchange"]] = _message
+				_message = "`%s = %s %s` %s *%s*" % (_unit_source, _price, _unit_target, emoji.emojize(':rocket:'), source["exchange"])
+				_message_inline = "%s = %s %s" % (_unit_source, _price, _unit_target)
+				if inline_call==True:
+					results[source["exchange"]] = _message
+				else:
+					results[source["exchange"]] = _message_inline
 				bSUCCESS = True
 		if bSUCCESS:
 			return {"success": True, "result": results}
@@ -128,8 +133,7 @@ def Converter_Convert(args):
 				results.append("*Error :(*\n_%s_\nFailed to convert. Sorry." % results_tmp["result"])
 		else:
 			for service in results_tmp["result"]:
-					#results.append(results_tmp["result"][service].join(['`', '`'])) # ^_^
-					results.append(results_tmp["result"][service]) # ^_^
+					results.append(results_tmp["result"][service])
 
 		return ('\n'.join(results))
 	else:

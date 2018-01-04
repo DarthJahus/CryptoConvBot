@@ -23,7 +23,7 @@
 
 \.idea/dictionaries/mohus\.xml
 
-.xml
+*.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,57 +6,42 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
-import HelperFunctions
-
-
-# Config
-config = HelperFunctions.load_file_json("config.json")
-
 
 # VARIABLES
-__version__ = "0.18.1.1"
+
+__version = "0.18.1.1"
 __DONATION_ETH = ""
 __DONATION_ETC = ""
 __DONATION_XVG = ""
 __DONATION_XRP = ""
 
+# CONSTANTES
 
-# CONSTANTS
-__help = {
-	"fr": "*AIDE - HELP*\n\nFaire une conversion :\n/convert quantité monnaie_1 monnaie_2\n`Ex : /convert 1 ETH USD`'"
-}
+__help_FR = "*AIDE - HELP*\n\nFaire une conversion :\n/convert quantité monnaie_1 monnaie_2\n`Ex : /convert 1 ETH USD`'"
 
 # Enable logging
-logging.basicConfig(
-	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-	level=logging.INFO
-)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+					level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
-# Define a dew command handlers. These usually take the two arguments bot and
+# Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
-
 
 def start(bot, update):
 	"""Send a message when the command /start is issued."""
 	update.message.reply_text('Hi!')
 
-
 def about(bot, update):
 	"""Send a message when the command /start is issued."""
-	update.message.reply_text(
-		'*CryptoConBot v %s*\npar %s @Jahus, %s @mohus, %s @foudre.\n\nAppelez /help pour voir la liste des commandes.'
-		% (__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:')),
-		parse_mode="Markdown",
-		quote=True
-	)
-
+	update.message.reply_text('*CryptoConBot v %s*\npar %s @Jahus, %s @mohus, %s @foudre.\n\nAppelez /help pour voir la liste des commandes.'
+							  % (__version, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:')),
+							  parse_mode="Markdown", quote=True)
 
 def convert(bot, update, args):
 	print args
 	update.message.reply_text(Converter_Convert(args), parse_mode="Markdown", quote=True)
-
 
 def inlinequery(bot, update):
 	query = update.inline_query.query
@@ -71,49 +56,43 @@ def inlinequery(bot, update):
 	# elle contiendra la liste des "articles" inline à afficher
 	results = list()
 
-	if not exchanges_result["success"]:
+	# véif sir des erreurs de conversion ont survenu
+	if exchanges_result["success"]==False:
 		results = [
-			(
-				InlineQueryResultArticle(
-					id="ErreurDeConversion000",
-					title='Error - Erreur',
-					input_message_content=InputTextMessageContent("Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
-					description=("Failed to convert. Sorry.\n%s" % exchanges_result["result"]),
-					thumb_url="http://i.imgur.com/vyxEwc9.png",
-					thumb_height=64, thumb_width=64
-				)
-			)
-		]
+			(InlineQueryResultArticle(
+			id="ErreurDeConversion000",
+			title='Error - Erreur',
+			input_message_content=InputTextMessageContent("Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
+			description=("Failed to convert. Sorry.\n%s" % exchanges_result["result"]),
+			thumb_url="http://i.imgur.com/vyxEwc9.png",
+			thumb_height=64, thumb_width=64)
+		)]
 	else:
 		results = [
-			(
-				InlineQueryResultArticle(
-					id="CryptoCompare000",
-					title='CryptoCompare',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
-					description=exchanges_result['result_inline']['CryptoCompare'],
-					thumb_url="https://i.imgur.com/LAOOxhM.png",
-					thumb_height=64, thumb_width=64
-				)
-			),
-			(
-				InlineQueryResultArticle(
-					id="Cryptonator000",
-					title='Cryptonator',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
-					description=exchanges_result['result_inline']['Cryptonator'],
-					thumb_url="https://i.imgur.com/SoeT9GX.png",
-					thumb_height=64, thumb_width=64
-				)
-			)
-		]
+			(InlineQueryResultArticle(
+			id="CryptoCompare000",
+			title='CryptoCompare',
+			input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
+			description=exchanges_result['result_inline']['CryptoCompare'],
+			thumb_url="https://i.imgur.com/LAOOxhM.png",
+			thumb_height=64, thumb_width=64)
+		),
+			(InlineQueryResultArticle(
+			id="Cryptonator000",
+			title='Cryptonator',
+			input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
+			description=exchanges_result['result_inline']['Cryptonator'],
+			thumb_url="https://i.imgur.com/SoeT9GX.png",
+			thumb_height=64, thumb_width=64)
+			)]
+
 	update.inline_query.answer(results)
+
 
 
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode="Markdown")
-
+	update.message.reply_text(__help_FR, parse_mode="Markdown")
 
 def error(bot, update, error):
 	"""Log Errors caused by Updates."""
@@ -123,7 +102,7 @@ def error(bot, update, error):
 def main():
 	"""Start the bot."""
 	# Create the EventHandler and pass it your bot's token.
-	updater = Updater(config["token"])
+	updater = Updater("500043374:AAG7k0ksAhO-L6KXy8qBGXn3THda16t1Whg")
 
 	# Get the dispatcher to register handlers
 	dp = updater.dispatcher

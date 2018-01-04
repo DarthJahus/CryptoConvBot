@@ -1,27 +1,7 @@
 
-\.idea/cryptoConBot\.iml
-
-\.idea/inspectionProfiles/Project_Default\.xml
-
-\.idea/misc\.xml
-
-\.idea/modules\.xml
-
-\.idea/vcs\.xml
-
-\.idea/workspace\.xml
-
-\.pyc
-
-\.idea/codeStyles/codeStyleConfig\.xml
-
-\.idea/markdown-navigator\.xml
-
-\.idea/markdown-navigator/profiles_settings\.xml
-
-\.idea/preferred-vcs\.xml
-
-\.idea/dictionaries/mohus\.xml
+\.idea/
+_windows/
+codestyles/
 
 *.xml
 

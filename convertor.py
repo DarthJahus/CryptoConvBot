@@ -6,8 +6,8 @@
 import requests
 import emoji
 
-# CONSTANTES
 
+# CONSTANTES
 units = {
 	"btc": {
 		"name": "Bitcoin",
@@ -21,17 +21,18 @@ units = {
 	}
 }
 
+
 #  APIs de conversion
 def api_cryptonator(coin_0, coin_1):
 	try:
 		_exchange = "Cryptonator"
 		req = requests.get("https://www.cryptonator.com/api/ticker/%s-%s" % (coin_0, coin_1))
 		print "https://www.cryptonator.com/api/ticker/%s-%s" % (coin_0, coin_1)
-		if (req.status_code != 200):
+		if req.status_code != 200:
 			return {"success": False, "error": ("Error %s from Cryptonator" % req.status_code)}
 		else:
 			req_dict = req.json()
-			if (req_dict["success"] != True):
+			if not req_dict["success"]:
 				return {"success": False, "error": ("Error from Cryptonator: %s" % req_dict["error"])}
 			else:
 				_last = float(req_dict["ticker"]["price"])
@@ -41,15 +42,16 @@ def api_cryptonator(coin_0, coin_1):
 	except:
 		return {"success": False, "error": "Error from api_cryptonator()"}
 
+
 def api_cryptocompare(coin_0, coin_1):
 	try:
 		_exchange = "CryptoCompare"
 		req = requests.get("https://min-api.cryptocompare.com/data/price?fsym=%s&tsyms=%s" % (coin_0, coin_1))
-		if (req.status_code != 200):
+		if req.status_code != 200:
 			return {"success": False, "error": ("Error %s from CryptoCompare" % req.status_code)}
 		else:
 			req_dict = req.json()
-			if ("Response" in req_dict):
+			if "Response" in req_dict:
 				return {"success": False, "error": ("Error from CryptoCompare: %s" % req_dict["Message"])}
 			else:
 				_last = float(req_dict[coin_1.upper()])
@@ -59,14 +61,15 @@ def api_cryptocompare(coin_0, coin_1):
 	except:
 		return {"success": False, "error": "Error from api_cryptocompare()"}
 
+
 def api_convert_coin(args, inline_call):
 	print args
-	if (len(args) > 3 or len(args) < 2):
+	if len(args) > 3 or len(args) < 2:
 		return {"success": False, "result": None}
 	else:
 		value = 1.
 		sources = []
-		if (len(args) == 3):
+		if len(args) == 3:
 			try:
 				value = float(args[0])
 				print("-- api_convert_coin(): value = %.8f" % value)
@@ -87,7 +90,7 @@ def api_convert_coin(args, inline_call):
 		results_inline = {}
 		bSUCCESS = False
 		for source in sources:
-			if source["success"] != True:
+			if not source["success"]:
 				print("** api_convert_coin():\n\t%s" % source["error"])
 			else:
 				_message = ""
@@ -116,27 +119,27 @@ def api_convert_coin(args, inline_call):
 				results[source["exchange"]] = _message
 
 				# contenu du message (description) des éléments Inline
-				if inline_call==True:
+				if inline_call:
 					_message_inline = "%s = %s %s" % (_unit_source, _price, _unit_target)
 					results_inline[source["exchange"]] = _message_inline
 
 				bSUCCESS = True
 		if bSUCCESS:
-			if inline_call==True:
+			if inline_call:
 				return {"success": True, "result": results, "result_inline": results_inline}
 			else:
 				return {"success": True, "result": results}
 		else:
 			return {"success": False, "result": "All sources returned an error."}
 
-#
+
 def Converter_Convert(args):
 	if len(args) in [2, 3]:
 
 		results_tmp = api_convert_coin(args, inline_call=False)
 		results = []
 
-		if results_tmp["success"] == False:
+		if not results_tmp["success"]:
 				results.append("*Error :(*\n_%s_\nFailed to convert. Sorry." % results_tmp["result"])
 		else:
 			for service in results_tmp["result"]:

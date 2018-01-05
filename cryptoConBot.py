@@ -6,12 +6,12 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
-import helperfunctions
+import helperfunctions as Helper
 import api_beach
 
 # Config
 dev = "mohus"  # ou jahus
-config = helperfunctions.load_file_json("config.json")
+config = Helper.load_file_json("config.json")
 
 # VARIABLES
 __version__ = "0.18.1.2"
@@ -19,6 +19,7 @@ __DONATION_ETH = ""
 __DONATION_ETC = ""
 __DONATION_XVG = ""
 __DONATION_XRP = ""
+
 
 # CONSTANTS
 __help = {
@@ -40,7 +41,7 @@ logger = logging.getLogger(__name__)
 def start(bot, update):
 	"""Send a message when the command /start is issued."""
 	update.message.reply_text('Hi!')
-	api_beach.generate_CMC_coinlist()
+	api_beach.generate_cmc_coinlist()
 
 
 def about(bot, update):

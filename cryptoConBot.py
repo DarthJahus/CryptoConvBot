@@ -2,26 +2,23 @@
 # cryptoConBot
 
 import logging
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
 import helperfunctions
 import api_beach
 
-
 # Config
-dev = "mohus" # ou jahus
+dev = "mohus"  # ou jahus
 config = helperfunctions.load_file_json("config.json")
 
-
 # VARIABLES
-__version__ = "0.18.1.1"
+__version__ = "0.18.1.2"
 __DONATION_ETH = ""
 __DONATION_ETC = ""
 __DONATION_XVG = ""
 __DONATION_XRP = ""
-
 
 # CONSTANTS
 __help = {
@@ -51,14 +48,14 @@ def about(bot, update):
 	update.message.reply_text(
 		'*CryptoConBot v %s*\npar %s @Jahus, %s @mohus, %s @foudre.\n\nAppelez /help pour voir la liste des commandes.'
 		% (__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:')),
-		parse_mode="Markdown",
+		parse_mode=ParseMode.MARKDOWN,
 		quote=True
 	)
 
 
 def convert(bot, update, args):
 	print args
-	update.message.reply_text(Converter_Convert(args), parse_mode="Markdown", quote=True)
+	update.message.reply_text(Converter_Convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
 
 
 def inlinequery(bot, update):
@@ -80,7 +77,8 @@ def inlinequery(bot, update):
 				InlineQueryResultArticle(
 					id="ErreurDeConversion000",
 					title='Error - Erreur',
-					input_message_content=InputTextMessageContent("Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
+					input_message_content=InputTextMessageContent(
+						"Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
 					description=("Failed to convert. Sorry.\n%s" % exchanges_result["result"]),
 					thumb_url="http://i.imgur.com/vyxEwc9.png",
 					thumb_height=64, thumb_width=64
@@ -93,7 +91,8 @@ def inlinequery(bot, update):
 				InlineQueryResultArticle(
 					id="CryptoCompare000",
 					title='CryptoCompare',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
+					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],
+																  parse_mode=ParseMode.MARKDOWN),
 					description=exchanges_result['result_inline']['CryptoCompare'],
 					thumb_url="https://i.imgur.com/LAOOxhM.png",
 					thumb_height=64, thumb_width=64
@@ -103,7 +102,8 @@ def inlinequery(bot, update):
 				InlineQueryResultArticle(
 					id="Cryptonator000",
 					title='Cryptonator',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],parse_mode=ParseMode.MARKDOWN),
+					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],
+																  parse_mode=ParseMode.MARKDOWN),
 					description=exchanges_result['result_inline']['Cryptonator'],
 					thumb_url="https://i.imgur.com/SoeT9GX.png",
 					thumb_height=64, thumb_width=64
@@ -113,25 +113,45 @@ def inlinequery(bot, update):
 	update.inline_query.answer(results)
 
 
-def coinSnap (bot, update, args):
+def coinSnap(bot, update, args):
 	if (len(args) > 2):
 		# trop d'argument
 		update.message.reply_text("*ERROR - ERREUR*\n"
 								  "*Utilisation :* `snap monnaie0 monnaie1`\n"
-								  "_monnaie1 est optionel, le cas échéant, la conversion se fait vers l'USD_", parse_mode="Markdown")
+								  "_monnaie1 est optionel, le cas échéant, la conversion se fait vers l'USD_",
+								  parse_mode="Markdown")
 	else:
-			# si une seule monnaie a été spécifiée
+		# si une seule monnaie a été spécifiée
 		if len(args) == 1:
 			# un seul argument a été passé (la monnaie qui nous intéresse)
 			# alors la conversion se fera par défaut vers l'USD
-			api_beach.api_coinmarketcap_getSnap(args[0], 'usd')
-		else :
+			results = api_beach.api_coinmarketcap_getSnap(args[0], 'usd')
+		else:
 			# la conversion prend en considération deux monnaies
-			api_beach.api_coinmarketcap_getSnap(args[0], args[1])
+			results = api_beach.api_coinmarketcap_getSnap(args[0], args[1])
+
+		if results["success"]=="True":
+
+			# on prend une emoji représentation un changement positif/négatif
+			if results["result"]["change24"][0] == "-":
+				_signEmo = emojize(":snowflake:", use_aliases=True)
+			else:
+				_signEmo = emojize(":white_check_mark:", use_aliases=True)
+
+			# retour
+			update.message.reply_text("*%s*\n\n`Chang. 24h` : *%s* %s \n`Vol. 24h USD` : *%s*" %
+											(args[0].upper(),  # la monnaie
+											results["result"]["change24"],  # valeur du changement sur 24h
+											utils.helpers.escape_markdown(_signEmo),  # emoji affichange flèche haut/bas selon le changement
+											results["result"]["24volume_usd"]),
+										parse_mode=ParseMode.MARKDOWN)
+		else:
+			update.message.reply_text("*ERROR - ERREUR*", parse_mode=ParseMode.MARKDOWN)
+
 
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode="Markdown")
+	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN)
 
 
 def error(bot, update, error):
@@ -151,10 +171,9 @@ def main():
 	dp.add_handler(CommandHandler("start", start))
 	dp.add_handler(CommandHandler("help", help))
 	dp.add_handler(CommandHandler("about", about))
-	dp.add_handler(CommandHandler("convert", convert, pass_args= True))
+	dp.add_handler(CommandHandler("convert", convert, pass_args=True))
 	dp.add_handler(InlineQueryHandler(inlinequery))
 	dp.add_handler(CommandHandler("snap", coinSnap, pass_args=True))
-
 
 	# log all errors
 	dp.add_error_handler(error)
@@ -170,4 +189,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-

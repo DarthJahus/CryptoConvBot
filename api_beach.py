@@ -1,14 +1,36 @@
+# coding=utf-8
 import requests
 from helperfunctions import load_file_json
 from helperfunctions import save_file_json
+import time
 
+# Cache managment
+__time_sync = 0
+__instantCoinList = []
+
+# charge le fichier en cache; s'il ne l'est pas (To-Do: Mettre un Time-out, pour resync)
+# et identifie l'id de la monnaie depuis le symbol envoyé en args
 def getCMC_symbol(args):
-	coinlist = load_file_json("cryptomarketcap_list.json")
-	return coinlist[args]
+	# si le temps correspond à la valeur originelle de la variable
+	# il s'agit probablement du premier lancement, donc on obtient la liste
+	# on la sauvegarde, et on obtient la liste id/symbol
+	# qui est elle même mise en cache
+	if (__time_sync + (60*60) <= time.time()):
+		generate_CMC_coinlist()
+		coinlist = load_file_json("cryptomarketcap_list.json")
+		__instantCoinList = coinlist
+		# on met la dernière fois qu'on a syncé à maintenant (now)
+		__time_sync = time.time()
+		return __instantCoinList[args][0]
+	else:
+		# alors on a quelque chose en cache, alors on charge directement
+		return __instantCoinList[args][0]
 
+
+# obtient la liste des monnaies depuis le site, et enregistre en local la liste (id/symbole)
 def generate_CMC_coinlist():
 	try:
-		req = requests.get("https://api.coinmarketcap.com/v1/ticker/?limit=0")
+		req = requests.get("https://api.coinmarketcap.com/v1/ticker/?limit=0") # limit 0 : liste toutes les monnaies
 		coinlist_tosave = {}
 		if len(req.json()) != 0:
 			for money in req.json():
@@ -20,23 +42,21 @@ def generate_CMC_coinlist():
 		return {"success": False, "error": "Error from api_cryptomarketcap [list]"}
 
 def api_coinmarketcap_getSnap(coin_0, coin_1):
-	try:
+#	try:
 		# on prend le symbole de la monnaie depuis la liste
-		__coin_0 = getCMC_symbol(coin_0)
-		print "https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (str(__coin_0), coin_1)
+		# monnaie envoyée en arg en majuscules
+		__coin_0 = getCMC_symbol(coin_0.upper())
+
 		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (__coin_0, coin_1))
 		if (req.status_code != 200):
 			return {"success": False, "error": ("Error %s from CryptoCompare" % req.status_code)}
 		else:
 			req_dict=req.json()
-			if (req_dict["success"] != True):
-				return {"success": False, "error": ("Error from CryptCompare: %s" % req_dict["error"])}
-			else:
-				_change24h = req_dict['percent_change_24h']
-				_change7d = req_dict['percent_change_7d']
-				_volume24h_USD = req_dict['2h_volume_usd']
-				return {"success": True,
-						"result":{"change24" : _change24h, "change7d" : _change7d, "24volume_usd" : _volume24h_USD}}
 
-	except:
-		return {"success": False, "error": "Error from api_cryptocompare [snap]"}
+			_change24h = req_dict[0]['percent_change_24h']
+			_change7d = req_dict[0]['percent_change_7d']
+			_volume24h_USD = req_dict[0]['24h_volume_usd']
+			return {"success": True,
+					"result":{"change24" : _change24h, "change7d" : _change7d, "24volume_usd" : _volume24h_USD}}
+#	except:
+#		return {"success": False, "error": "Error from api_cryptocompare [snap]"}

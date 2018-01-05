@@ -16,3 +16,5 @@
             -création de la liste des monnaies (nom/symbole)
             -enregistrement de cette liste sur le disque (cache)
         - ajout d'une fonction helper (save_json)
+        - lecture des données CoinMarketCap
+        - affichage du résultat avec des émojis

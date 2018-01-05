@@ -6,12 +6,13 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
-import HelperFunctions
+import helperfunctions
+import api_beach
 
 
 # Config
 dev = "mohus" # ou jahus
-config = HelperFunctions.load_file_json("config.json")
+config = helperfunctions.load_file_json("config.json")
 
 
 # VARIABLES
@@ -42,6 +43,7 @@ logger = logging.getLogger(__name__)
 def start(bot, update):
 	"""Send a message when the command /start is issued."""
 	update.message.reply_text('Hi!')
+	api_beach.generate_CMC_coinlist()
 
 
 def about(bot, update):
@@ -111,6 +113,22 @@ def inlinequery(bot, update):
 	update.inline_query.answer(results)
 
 
+def coinSnap (bot, update, args):
+	if (len(args) > 2):
+		# trop d'argument
+		update.message.reply_text("*ERROR - ERREUR*\n"
+								  "*Utilisation :* `snap monnaie0 monnaie1`\n"
+								  "_monnaie1 est optionel, le cas échéant, la conversion se fait vers l'USD_", parse_mode="Markdown")
+	else:
+			# si une seule monnaie a été spécifiée
+		if len(args) == 1:
+			# un seul argument a été passé (la monnaie qui nous intéresse)
+			# alors la conversion se fera par défaut vers l'USD
+			api_beach.api_coinmarketcap_getSnap(args[0], 'usd')
+		else :
+			# la conversion prend en considération deux monnaies
+			api_beach.api_coinmarketcap_getSnap(args[0], args[1])
+
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
 	update.message.reply_text(__help["fr"], parse_mode="Markdown")
@@ -135,6 +153,7 @@ def main():
 	dp.add_handler(CommandHandler("about", about))
 	dp.add_handler(CommandHandler("convert", convert, pass_args= True))
 	dp.add_handler(InlineQueryHandler(inlinequery))
+	dp.add_handler(CommandHandler("snap", coinSnap, pass_args=True))
 
 
 	# log all errors

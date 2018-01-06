@@ -46,25 +46,27 @@ def generate_cmc_coinlist():
 
 
 def api_coinmarketcap_getSnap(coin_0, coin_1):
-	#	try:
-	# on prend le symbole de la monnaie depuis la liste
-	# monnaie envoyée en arg en majuscules
-	_coin_0 = get_cmc_symbol(coin_0.upper())
-	req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1))
-	if req.status_code != 200:
-		return {"success": False, "error": "Error %s from CryptoCompare" % req.status_code}
-	else:
-		req_dict=req.json()
-		_change24h = req_dict[0]['percent_change_24h']
-		_change7d = req_dict[0]['percent_change_7d']
-		_volume24h_USD = req_dict[0]['24h_volume_usd']
-		return {
-			"success": True,
-			"result": {
-				"change24" : _change24h,
-				"change7d" : _change7d,
-				"24volume_usd" : _volume24h_USD
+	try:
+		# on prend le symbole de la monnaie depuis la liste
+		# monnaie envoyée en arg en majuscules
+		_coin_0 = get_cmc_symbol(coin_0.upper())
+		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1))
+		if req.status_code != 200:
+			return {"success": False, "error": "Error %s from CryptoCompare" % req.status_code}
+		else:
+			req_dict=req.json()
+			_change24h = req_dict[0]['percent_change_24h']
+			_change7d = req_dict[0]['percent_change_7d']
+			_volume24h_USD = req_dict[0]['24h_volume_usd']
+			_price_USD = req_dict[0]['price_usd']
+			return {
+				"success": True,
+				"result": {
+					"price_usd": _price_USD,
+					"change24" : _change24h,
+					"change7d" : _change7d,
+					"24volume_usd" : "{:,.0f}".format(float(_volume24h_USD)).replace(',', ' ')
+				}
 			}
-		}
-	#	except:
-	#		return {"success": False, "error": "Error from api_cryptocompare [snap]"}
+	except:
+		return {"success": False, "error": "Error from api_CoinMarketCap [snap]"}

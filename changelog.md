@@ -18,3 +18,5 @@
         - ajout d'une fonction helper (save_json)
         - lecture des données CoinMarketCap
         - affichage du résultat avec des émojis
+        - support d'un cache pour la liste des monnaies
+        - ajout de /ticker

@@ -27,7 +27,6 @@ def api_cryptonator(coin_0, coin_1):
 	try:
 		_exchange = "Cryptonator"
 		req = requests.get("https://www.cryptonator.com/api/ticker/%s-%s" % (coin_0, coin_1))
-		print "https://www.cryptonator.com/api/ticker/%s-%s" % (coin_0, coin_1)
 		if req.status_code != 200:
 			return {"success": False, "error": ("Error %s from Cryptonator" % req.status_code)}
 		else:
@@ -63,7 +62,6 @@ def api_cryptocompare(coin_0, coin_1):
 
 
 def api_convert_coin(args, inline_call):
-	print args
 	if len(args) > 3 or len(args) < 2:
 		return {"success": False, "result": None}
 	else:
@@ -114,7 +112,7 @@ def api_convert_coin(args, inline_call):
 					_price = "%i" % int(_price * 1e+8)
 				else:
 					_price = "%.8f" % _price
-				_message = "`%s = %s %s` %s *%s*" % (_unit_source, _price, _unit_target, emoji.emojize(':rocket:'), source["exchange"])
+				_message = "`%s = %s %s` %s *%s*" % (_unit_source, _price, _unit_target, emoji.emojize(':white_small_square:'), source["exchange"])
 
 				results[source["exchange"]] = _message
 

@@ -55,8 +55,10 @@ def about(bot, update):
 
 
 def convert(bot, update, args):
-	print args
 	update.message.reply_text(Converter_Convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
+
+def ticker(bot, update, args):
+	update.message.reply_text(Converter_Convert([args[0], "btc"]), parse_mode=ParseMode.MARKDOWN, quote=True)
 
 
 def inlinequery(bot, update):
@@ -131,17 +133,18 @@ def coinSnap(bot, update, args):
 			# la conversion prend en considération deux monnaies
 			results = api_beach.api_coinmarketcap_getSnap(args[0], args[1])
 
-		if results["success"]=="True":
+		if results["success"]==True:
 
 			# on prend une emoji représentation un changement positif/négatif
 			if results["result"]["change24"][0] == "-":
-				_signEmo = emojize(":snowflake:", use_aliases=True)
+				_signEmo = emojize(":small_red_triangle_down:", use_aliases=True)
 			else:
-				_signEmo = emojize(":white_check_mark:", use_aliases=True)
+				_signEmo = emojize(":small_red_triangle:", use_aliases=True)
 
 			# retour
-			update.message.reply_text("*%s*\n\n`Chang. 24h` : *%s* %s \n`Vol. 24h USD` : *%s*" %
-											(args[0].upper(),  # la monnaie
+			update.message.reply_text("*%s*\n\n*Price :* `%s USD`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
+											(args[0].upper(),  # la monnaie,
+											results["result"]["price_usd"],
 											results["result"]["change24"],  # valeur du changement sur 24h
 											utils.helpers.escape_markdown(_signEmo),  # emoji affichange flèche haut/bas selon le changement
 											results["result"]["24volume_usd"]),
@@ -149,6 +152,9 @@ def coinSnap(bot, update, args):
 		else:
 			update.message.reply_text("*ERROR - ERREUR*", parse_mode=ParseMode.MARKDOWN)
 
+
+def easterEgg(bot, update):
+	update.message.reply_photo("https://i.imgur.com/gzjl0yD.jpg")
 
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
@@ -175,6 +181,8 @@ def main():
 	dp.add_handler(CommandHandler("convert", convert, pass_args=True))
 	dp.add_handler(InlineQueryHandler(inlinequery))
 	dp.add_handler(CommandHandler("snap", coinSnap, pass_args=True))
+	dp.add_handler(CommandHandler("ticker", ticker, pass_args=True))
+	dp.add_handler(CommandHandler("keskifichou", easterEgg))
 
 	# log all errors
 	dp.add_error_handler(error)

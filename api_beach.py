@@ -65,7 +65,8 @@ def api_coinmarketcap_getSnap(coin_0, coin_1):
 					"price_usd": _price_USD,
 					"change24" : _change24h,
 					"change7d" : _change7d,
-					"24volume_usd" : "{:,.0f}".format(float(_volume24h_USD)).replace(',', ' ')
+					"coin_name" : _coin_0,
+					"24volume_usd" : "{:,.0f}".format(float(_volume24h_USD)).replace(',', ' '),
 				}
 			}
 	except:

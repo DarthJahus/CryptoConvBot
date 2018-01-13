@@ -2,7 +2,7 @@
 # cryptoConBot
 
 import logging
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
+from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils, Chat
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
@@ -14,22 +14,25 @@ dev = "mohus"  # ou jahus
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "0.18.1.2"
-__DONATION_ETH = ""
-__DONATION_ETC = ""
-__DONATION_XVG = ""
-__DONATION_XRP = ""
+__version__ = "0.18.1.3"
+__bot_name = "cryptoconvbot"
+__DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
+__DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
+__DONATION_PND = "PEwzKUUf1noKQaSkzKinPZ6irJBL1WckB4"
+__DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 
 
 # CONSTANTS
 __help = {
-	"fr": "*AIDE - HELP*\n\nFaire une conversion :\n/convert quantité monnaie_1 monnaie_2\n`Ex : /convert 1 ETH USD`'"
+	"fr": "*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
+	      "\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
+			% (emojize(":key:"))
 }
 
 # Enable logging
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-	level=logging.INFO
+	level=logging.CRITICAL
 )
 logger = logging.getLogger(__name__)
 
@@ -43,16 +46,32 @@ def start(bot, update):
 	update.message.reply_text('Hi!')
 	api_beach.generate_cmc_coinlist()
 
-
 def about(bot, update):
 	"""Send a message when the command /start is issued."""
-	update.message.reply_text(
-		'*CryptoConBot v %s*\npar %s @Jahus, %s @mohus, %s @foudre.\n\nAppelez /help pour voir la liste des commandes.'
-		% (__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:')),
-		parse_mode=ParseMode.MARKDOWN,
-		quote=True
-	)
 
+	if update.effective_chat.type == "private":
+		update.message.reply_text(
+			"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nCall /help to see how it works :\n\n" \
+			"*DONATIONS*\nIf you like our work, you can donate %s\n" \
+			"*ETH/ETC:* `%s`\n" \
+			"*XVG:* `%s`\n" \
+			"*PND:* `%s`\n" \
+			"*BTC/BCH:* `%s`\n" \
+			"Thanks !\n\n*Credits* :\n"
+			"API from [CryptoCoinMarket](https://coinmarketcap.com)\n" \
+			"API from [Cryptonator](https://www.cryptonator.com)" \
+
+			% (__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
+			   emojize(':beers:', use_aliases=True), __DONATION_ETH, __DONATION_XVG, __DONATION_PND, __DONATION_BTC),
+			parse_mode=ParseMode.MARKDOWN,
+			quote=True,
+			disable_web_page_preview=True
+		)
+	else:
+		print "group"
+		update.message.reply_text("You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)"
+		                          % (emojize(":nerd_face:"), __bot_name),
+		                          quote=True, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
 
 def convert(bot, update, args):
 	update.message.reply_text(Converter_Convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
@@ -79,7 +98,7 @@ def inlinequery(bot, update):
 			(
 				InlineQueryResultArticle(
 					id="ErreurDeConversion000",
-					title='Error - Erreur',
+					title='Error (#32)',
 					input_message_content=InputTextMessageContent(
 						"Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
 					description=("Failed to convert. Sorry.\n%s" % exchanges_result["result"]),
@@ -120,8 +139,8 @@ def coinSnap(bot, update, args):
 	if (len(args) > 2):
 		# trop d'argument
 		update.message.reply_text("*ERROR - ERREUR*\n"
-								  "*Utilisation :* `snap monnaie0 monnaie1`\n"
-								  "_monnaie1 est optionel, le cas échéant, la conversion se fait vers l'USD_",
+								  "*Usage :* `snap coin0 coin1`\n"
+								  "_coin1 is optional, in this case, conversion done in USD_",
 								  parse_mode="Markdown")
 	else:
 		# si une seule monnaie a été spécifiée
@@ -142,15 +161,15 @@ def coinSnap(bot, update, args):
 				_signEmo = emojize(":small_red_triangle:", use_aliases=True)
 
 			# retour
-			update.message.reply_text("*%s*\n\n*Price :* `%s USD`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
-											(args[0].upper(),  # la monnaie,
+			update.message.reply_text("*%s* (_%s_)\n\n*Price :* `%s USD`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
+											(args[0].upper(), results["result"]["coin_name"],  # la monnaie,
 											results["result"]["price_usd"],
 											results["result"]["change24"],  # valeur du changement sur 24h
 											utils.helpers.escape_markdown(_signEmo),  # emoji affichange flèche haut/bas selon le changement
 											results["result"]["24volume_usd"]),
 										parse_mode=ParseMode.MARKDOWN)
 		else:
-			update.message.reply_text("*ERROR - ERREUR*", parse_mode=ParseMode.MARKDOWN)
+			update.message.reply_text("*ERROR (#35)*", parse_mode=ParseMode.MARKDOWN)
 
 
 def easterEgg(bot, update):
@@ -158,7 +177,7 @@ def easterEgg(bot, update):
 
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN)
+	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN,  quote=True)
 
 
 def error(bot, update, error):

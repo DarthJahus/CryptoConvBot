@@ -24,6 +24,7 @@ def get_cmc_symbol(args):
 		__instantCoinList = coinlist
 		# on met la dernière fois qu'on a syncé à maintenant (now)
 		__time_sync = time.time()
+		print "Updated coin list on disk ! [DEBUG] %s" % time.time()
 		return __instantCoinList[args][0]
 	else:
 		# Comme on a quelque chose en cache, on la charge directement
@@ -59,10 +60,12 @@ def api_coinmarketcap_getSnap(coin_0, coin_1):
 			_change7d = req_dict[0]['percent_change_7d']
 			_volume24h_USD = req_dict[0]['24h_volume_usd']
 			_price_USD = req_dict[0]['price_usd']
+			_price_BTC = req_dict[0]['price_btc']
 			return {
 				"success": True,
 				"result": {
 					"price_usd": _price_USD,
+					"price_btc": _price_BTC,
 					"change24" : _change24h,
 					"change7d" : _change7d,
 					"coin_name" : _coin_0,

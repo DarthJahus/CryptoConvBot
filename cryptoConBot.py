@@ -3,7 +3,7 @@
 
 import logging
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils, Chat
-from telegram.ext import Updater, CommandHandler, InlineQueryHandler
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
 from convertor import Converter_Convert, api_convert_coin
 from emoji import emojize
 import helperfunctions as Helper
@@ -26,7 +26,10 @@ __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 __help = {
 	"fr": "*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
 	      "\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
-			% (emojize(":key:"))
+			"\n\n*INLINE MODE* %s\n"
+	      "This bot can bot used in inline mode to convert, just write :\n"
+	      "`@CryptoConvBot`"
+			% (emojize(":key:"), emojize(":arrow_right_hook:", use_aliases=True))
 }
 
 # Enable logging
@@ -43,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 def start(bot, update):
 	"""Send a message when the command /start is issued."""
-	update.message.reply_text('Hi!')
+	update.message.reply_text('Hi !\nPlease type and send /help to see how it works...')
 	api_beach.generate_cmc_coinlist()
 
 def about(bot, update):
@@ -51,7 +54,7 @@ def about(bot, update):
 
 	if update.effective_chat.type == "private":
 		update.message.reply_text(
-			"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nCall /help to see how it works :\n\n" \
+			"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nSend /help to see how it works :\n\n" \
 			"*DONATIONS*\nIf you like our work, you can donate %s\n" \
 			"*ETH/ETC:* `%s`\n" \
 			"*XVG:* `%s`\n" \
@@ -68,7 +71,6 @@ def about(bot, update):
 			disable_web_page_preview=True
 		)
 	else:
-		print "group"
 		update.message.reply_text("You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)"
 		                          % (emojize(":nerd_face:"), __bot_name),
 		                          quote=True, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
@@ -161,9 +163,10 @@ def coinSnap(bot, update, args):
 				_signEmo = emojize(":small_red_triangle:", use_aliases=True)
 
 			# retour
-			update.message.reply_text("*%s* (_%s_)\n\n*Price :* `%s USD`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
+			update.message.reply_text("*%s* (_%s_)\n\n*Price :* `%s USD - %s BTC`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
 											(args[0].upper(), results["result"]["coin_name"],  # la monnaie,
 											results["result"]["price_usd"],
+											results["result"]["price_btc"],
 											results["result"]["change24"],  # valeur du changement sur 24h
 											utils.helpers.escape_markdown(_signEmo),  # emoji affichange flèche haut/bas selon le changement
 											results["result"]["24volume_usd"]),
@@ -178,6 +181,21 @@ def easterEgg(bot, update):
 def help(bot, update):
 	"""Send a message when the command /help is issued."""
 	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN,  quote=True)
+
+
+# Un membre rejoint un groupe
+def new_member(bot, update):
+	msg = update.message
+	# si le nouvel utilisateur est un bot, on ne dit rien
+	# ***à débattre !!
+	if not msg.new_chat_member.is_bot == True:
+		update.message.reply_text("Hello, %s." % msg.new_chat_member.username, quote=True)
+
+# Un membre quitte le groupe
+def quit_member(bot, update):
+	msg = update.message
+	if not msg.new_chat_member.is_bot == True:
+		update.message.reply_text("Bye, %s." % msg.left_chat_member.username, quote=True)
 
 
 def error(bot, update, error):
@@ -202,6 +220,10 @@ def main():
 	dp.add_handler(CommandHandler("snap", coinSnap, pass_args=True))
 	dp.add_handler(CommandHandler("ticker", ticker, pass_args=True))
 	dp.add_handler(CommandHandler("keskifichou", easterEgg))
+
+	# quand quelqu'un rejoint/quitte le chat
+	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, new_member))
+	dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, quit_member))
 
 	# log all errors
 	dp.add_error_handler(error)

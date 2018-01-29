@@ -4,7 +4,7 @@ import time
 import helperfunctions as Helper
 
 
-# Cache managment
+# Cache management
 __time_sync = 0
 __instantCoinList = []
 __sync_delay = 60*60
@@ -24,7 +24,6 @@ def get_cmc_symbol(args):
 		__instantCoinList = coinlist
 		# on met la dernière fois qu'on a syncé à maintenant (now)
 		__time_sync = time.time()
-		print "Updated coin list on disk ! [DEBUG] %s" % time.time()
 		return __instantCoinList[args][0]
 	else:
 		# Comme on a quelque chose en cache, on la charge directement
@@ -46,14 +45,14 @@ def generate_cmc_coinlist():
 		return {"success": False, "error": "Error from api_cryptomarketcap [list]"}
 
 
-def api_coinmarketcap_getSnap(coin_0, coin_1):
+def api_coinmarketcap_get_snap(coin_0, coin_1):
 	try:
 		# on prend le symbole de la monnaie depuis la liste
 		# monnaie envoyée en arg en majuscules
 		_coin_0 = get_cmc_symbol(coin_0.upper())
-		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1))
+		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1.upper()))
 		if req.status_code != 200:
-			return {"success": False, "error": "Error %s from CryptoCompare" % req.status_code}
+			return {"success": False, "message": "Received error %s from CoinMarketCap" % req.status_code}
 		else:
 			req_dict=req.json()
 			_change24h = req_dict[0]['percent_change_24h']
@@ -61,6 +60,7 @@ def api_coinmarketcap_getSnap(coin_0, coin_1):
 			_volume24h_USD = req_dict[0]['24h_volume_usd']
 			_price_USD = req_dict[0]['price_usd']
 			_price_BTC = req_dict[0]['price_btc']
+			_market_cap_usd = req_dict[0]["market_cap_usd"]
 			return {
 				"success": True,
 				"result": {
@@ -70,7 +70,8 @@ def api_coinmarketcap_getSnap(coin_0, coin_1):
 					"change7d" : _change7d,
 					"coin_name" : _coin_0,
 					"24volume_usd" : "{:,.0f}".format(float(_volume24h_USD)).replace(',', ' '),
+					"market_cap_usd": "{:,.0f}".format(float(_market_cap_usd)).replace(',', ' ')
 				}
 			}
 	except:
-		return {"success": False, "error": "Error from api_CoinMarketCap [snap]"}
+		return {"success": False, "message": "Error from api_coinmarketcap_get_snap()"}

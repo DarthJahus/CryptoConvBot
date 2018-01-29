@@ -7,7 +7,6 @@ import requests
 import emoji
 import urllib3
 urllib3.disable_warnings()
-import sys
 
 
 # Constants

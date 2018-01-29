@@ -1,12 +1,12 @@
 # coding=utf-8
-# cryptoConBot
+# CryptoConvBot 2
 
 import logging
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
 from Converter import convert, api_convert_coin
 from emoji import emojize
-import HelperFunctions as helper
+import HelperFunctions as Helper
 import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
@@ -15,7 +15,7 @@ urllib3.disable_warnings()
 # Config
 dev = "jahus"  # ou mohus
 __debug = True
-config = helper.load_file_json("config.json")
+config = Helper.load_file_json("config.json")
 
 # VARIABLES
 __version__ = "2.1814"
@@ -183,13 +183,13 @@ def cmd_snap(bot, update, args):
 				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
 			# Retour
 			update.message.reply_text(
-				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s` %s%%\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
+				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s%%` %s\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
 				% (
 					args[0].upper(), results["result"]["coin_name"],
 					results["result"]["price_usd"],
 					results["result"]["price_btc"],
 					results["result"]["change24"],
-					utils.helpers.escape_markdown(_change_sign),
+					_change_sign, # utils.helpers.escape_markdown(_change_sign),
 					results["result"]["24volume_usd"],
 					results["result"]["market_cap_usd"]
 				),
@@ -205,7 +205,7 @@ def cmd_easter_egg(bot, update):
 
 def cmd_help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN,  quote=True)
+	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
 
 
 def event_group_join(bot, update):

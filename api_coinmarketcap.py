@@ -1,7 +1,7 @@
 # coding=utf-8
 import requests
 import time
-import helperfunctions as Helper
+import HelperFunctions as Helper
 
 
 # Cache management
@@ -45,7 +45,7 @@ def generate_cmc_coinlist():
 		return {"success": False, "error": "Error from api_cryptomarketcap [list]"}
 
 
-def api_coinmarketcap_get_snap(coin_0, coin_1):
+def get_snap(coin_0, coin_1):
 	try:
 		# on prend le symbole de la monnaie depuis la liste
 		# monnaie envoyée en arg en majuscules

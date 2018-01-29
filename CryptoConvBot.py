@@ -4,14 +4,12 @@
 import logging
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
-from convertor import convert, api_convert_coin
+from Converter import convert, api_convert_coin
 from emoji import emojize
-import helperfunctions as helper
-import api_beach
-import time
+import HelperFunctions as helper
+import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
-import sys
 
 
 # Config
@@ -20,7 +18,7 @@ __debug = True
 config = helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "0.19.1.3"
+__version__ = "2.1814"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -58,7 +56,12 @@ __thumb_url = {
 		"height": 64
 	},
 	"Cryptonator": {
-		"url": "https://i.imgur.com/LAOOxhM.png",
+		"url": "https://i.imgur.com/SoeT9GX.png",
+		"width": 64,
+		"height": 64
+	},
+	"error": {
+		"url": "https://i.imgur.com/vyxEwc9.png",
 		"width": 64,
 		"height": 64
 	}
@@ -125,32 +128,36 @@ def inline_query(bot, update):
 	if not convertion_results["success"]:
 		results.append(
 			InlineQueryResultArticle(
-				id="ConvertionError%s" % time.time(),
-				title='Error (#32)',
+				id="%s/-1" % update.inline_query.id,
+				title="Conversion error",
 				input_message_content=InputTextMessageContent(
-					"Failed to convert. Sorry.\n%s" % convertion_results["result"], parse_mode=ParseMode.MARKDOWN
+					"*Error :(*\nFailed to convert \"`%s`\". Sorry.\n%s" % (convertion_results["result"], query),
+					parse_mode=ParseMode.MARKDOWN
 				),
-				description=("Failed to convert. Sorry.\n%s" % convertion_results["result"]),
-				thumb_url="http://i.imgur.com/vyxEwc9.png",
-				thumb_height=64, thumb_width=64
+				description="Failed to convert. Sorry.\n%s" % convertion_results["result"],
+				thumb_url=__thumb_url["error"]["url"],
+				thumb_height=__thumb_url["error"]["height"],
+				thumb_width=__thumb_url["error"]["width"]
 				)
 			)
 	else:
+		_res_id = 0
 		for service in convertion_results["result"]:
 			results.append(
 				InlineQueryResultArticle(
-					id="CryptoCompare%s" % time.time(),
+					id="%s/%s" % (update.inline_query.id, _res_id),
 					title=service,
 					input_message_content=InputTextMessageContent(
-						convertion_results['result'][service],
+						message_text=convertion_results['result'][service],
 						parse_mode=ParseMode.MARKDOWN
 					),
 					description=convertion_results['result_inline'][service],
 					thumb_url=__thumb_url[service]["url"],
-					thumb_height=__thumb_url[service]["height"],
-					thumb_width=__thumb_url[service]["width"]
-					)
+					thumb_width=__thumb_url[service]["width"],
+					thumb_height=__thumb_url[service]["height"]
+				)
 			)
+			_res_id+=1
 	update.inline_query.answer(results)
 
 
@@ -166,7 +173,7 @@ def cmd_snap(bot, update, args):
 		# USD par défaut
 		_unit_source = args[0].lower()
 		_unit_target = "usd"
-		results = api_beach.api_coinmarketcap_get_snap(_unit_source, _unit_target)
+		results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
 		# Check the results
 		if results["success"]:
 			# Emoji +/-
@@ -176,15 +183,15 @@ def cmd_snap(bot, update, args):
 				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
 			# Retour
 			update.message.reply_text(
-				"*%s* (%s)\n\n*MarketCap:* `%s USD`\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s` %s \n*Vol. 24h:* `%s USD`" \
+				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s` %s%%\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
 				% (
 					args[0].upper(), results["result"]["coin_name"],
-					results["result"]["market_cap_usd"],
 					results["result"]["price_usd"],
 					results["result"]["price_btc"],
 					results["result"]["change24"],
 					utils.helpers.escape_markdown(_change_sign),
-					results["result"]["24volume_usd"]
+					results["result"]["24volume_usd"],
+					results["result"]["market_cap_usd"]
 				),
 				parse_mode=ParseMode.MARKDOWN
 			)
@@ -262,7 +269,7 @@ def main():
 	updater.idle()
 
 	# Generate a coin list from CoinMarketCap
-	if not __debug: api_beach.generate_cmc_coinlist()
+	if not __debug: api_coinmarketcap.generate_cmc_coinlist()
 
 
 if __name__ == '__main__':

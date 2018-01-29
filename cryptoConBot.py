@@ -2,34 +2,66 @@
 # cryptoConBot
 
 import logging
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils, Chat
+from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
-from convertor import Converter_Convert, api_convert_coin
+from convertor import convert, api_convert_coin
 from emoji import emojize
-import helperfunctions as Helper
+import helperfunctions as helper
 import api_beach
+import time
+import urllib3
+urllib3.disable_warnings()
+import sys
+
 
 # Config
-dev = "mohus"  # ou jahus
-config = Helper.load_file_json("config.json")
+dev = "jahus"  # ou mohus
+__debug = True
+config = helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "0.18.1.3"
-__bot_name = "cryptoconvbot"
+__version__ = "0.19.1.3"
+__bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
 __DONATION_PND = "PEwzKUUf1noKQaSkzKinPZ6irJBL1WckB4"
 __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 
-
 # CONSTANTS
 __help = {
-	"fr": "*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
-	      "\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
-			"\n\n*INLINE MODE* %s\n"
-	      "This bot can bot used in inline mode to convert, just write :\n"
-	      "`@CryptoConvBot`"
-			% (emojize(":key:"), emojize(":arrow_right_hook:", use_aliases=True))
+	"fr":
+		"*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
+		"\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
+		"\n\n*INLINE MODE* %s\n"
+		"This bot can bot used in inline mode to convert, just write :\n"
+		"`@CryptoConvBot`"
+		% (emojize(":key:"), emojize(":arrow_right_hook:", use_aliases=True))
+}
+__ABOUT_TEXT = \
+	"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nSend /help to see how it works :\n\n" \
+	"*DONATIONS*\nIf you like our work, you can donate %s\n" \
+	"*ETH/ETC:* `%s`\n" \
+	"*XVG:* `%s`\n" \
+	"*PND:* `%s`\n" \
+	"*BTC/BCH:* `%s`\n" \
+	"Thanks !\n\n*Credits* :\n" \
+	"API from [CryptoCoinMarket](https://coinmarketcap.com)\n" \
+	"API from [Cryptonator](https://www.cryptonator.com)" \
+	% (
+		__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
+		emojize(':beers:', use_aliases=True), __DONATION_ETH, __DONATION_XVG, __DONATION_PND, __DONATION_BTC
+	)
+__thumb_url = {
+	"CryptoCompare": {
+		"url": "https://i.imgur.com/LAOOxhM.png",
+		"width": 64,
+		"height": 64
+	},
+	"Cryptonator": {
+		"url": "https://i.imgur.com/LAOOxhM.png",
+		"width": 64,
+		"height": 64
+	}
 }
 
 # Enable logging
@@ -44,45 +76,40 @@ logger = logging.getLogger(__name__)
 # update. Error handlers also receive the raised TelegramError object in error.
 
 
-def start(bot, update):
+def cmd_start(bot, update):
 	"""Send a message when the command /start is issued."""
-	update.message.reply_text('Hi !\nPlease type and send /help to see how it works...')
-	api_beach.generate_cmc_coinlist()
+	update.message.reply_text('Hi !\nUse /help to see how I can help you.')
 
-def about(bot, update):
+
+def cmd_about(bot, update):
 	"""Send a message when the command /start is issued."""
 
 	if update.effective_chat.type == "private":
 		update.message.reply_text(
-			"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nSend /help to see how it works :\n\n" \
-			"*DONATIONS*\nIf you like our work, you can donate %s\n" \
-			"*ETH/ETC:* `%s`\n" \
-			"*XVG:* `%s`\n" \
-			"*PND:* `%s`\n" \
-			"*BTC/BCH:* `%s`\n" \
-			"Thanks !\n\n*Credits* :\n"
-			"API from [CryptoCoinMarket](https://coinmarketcap.com)\n" \
-			"API from [Cryptonator](https://www.cryptonator.com)" \
-
-			% (__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
-			   emojize(':beers:', use_aliases=True), __DONATION_ETH, __DONATION_XVG, __DONATION_PND, __DONATION_BTC),
-			parse_mode=ParseMode.MARKDOWN,
+			__ABOUT_TEXT,
 			quote=True,
+			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True
 		)
 	else:
-		update.message.reply_text("You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)"
-		                          % (emojize(":nerd_face:"), __bot_name),
-		                          quote=True, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN)
-
-def convert(bot, update, args):
-	update.message.reply_text(Converter_Convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
-
-def ticker(bot, update, args):
-	update.message.reply_text(Converter_Convert([args[0], "btc"]), parse_mode=ParseMode.MARKDOWN, quote=True)
+		update.message.reply_text(
+			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)."
+			% (emojize(":nerd_face:"), __bot_name),
+			quote=True,
+			parse_mode=ParseMode.MARKDOWN,
+			disable_web_page_preview=True,
+		)
 
 
-def inlinequery(bot, update):
+def cmd_convert(bot, update, args):
+	update.message.reply_text(convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
+
+
+def cmd_ticker(bot, update, args):
+	update.message.reply_text(convert([args[0], "btc"]), parse_mode=ParseMode.MARKDOWN, quote=True)
+
+
+def inline_query(bot, update):
 	query = update.inline_query.query
 
 	if not query:
@@ -90,111 +117,109 @@ def inlinequery(bot, update):
 
 	# on obtient les résultats de tous les exchanges (-query- contient la commande)
 	# query est transformé en liste pour être décodé comme -args-
-	exchanges_result = api_convert_coin(query.split(' '), inline_call=True)
+	convertion_results = api_convert_coin(query.split(), inline_call=True)
 
 	# elle contiendra la liste des "articles" inline à afficher
 	results = list()
 
-	if not exchanges_result["success"]:
-		results = [
-			(
-				InlineQueryResultArticle(
-					id="ErreurDeConversion000",
-					title='Error (#32)',
-					input_message_content=InputTextMessageContent(
-						"Failed to convert. Sorry.\n%s" % exchanges_result["result"], parse_mode=ParseMode.MARKDOWN),
-					description=("Failed to convert. Sorry.\n%s" % exchanges_result["result"]),
-					thumb_url="http://i.imgur.com/vyxEwc9.png",
-					thumb_height=64, thumb_width=64
+	if not convertion_results["success"]:
+		results.append(
+			InlineQueryResultArticle(
+				id="ConvertionError%s" % time.time(),
+				title='Error (#32)',
+				input_message_content=InputTextMessageContent(
+					"Failed to convert. Sorry.\n%s" % convertion_results["result"], parse_mode=ParseMode.MARKDOWN
+				),
+				description=("Failed to convert. Sorry.\n%s" % convertion_results["result"]),
+				thumb_url="http://i.imgur.com/vyxEwc9.png",
+				thumb_height=64, thumb_width=64
 				)
 			)
-		]
 	else:
-		results = [
-			(
+		for service in convertion_results["result"]:
+			results.append(
 				InlineQueryResultArticle(
-					id="CryptoCompare000",
-					title='CryptoCompare',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],
-																  parse_mode=ParseMode.MARKDOWN),
-					description=exchanges_result['result_inline']['CryptoCompare'],
-					thumb_url="https://i.imgur.com/LAOOxhM.png",
-					thumb_height=64, thumb_width=64
-				)
-			),
-			(
-				InlineQueryResultArticle(
-					id="Cryptonator000",
-					title='Cryptonator',
-					input_message_content=InputTextMessageContent(exchanges_result['result']['CryptoCompare'],
-																  parse_mode=ParseMode.MARKDOWN),
-					description=exchanges_result['result_inline']['Cryptonator'],
-					thumb_url="https://i.imgur.com/SoeT9GX.png",
-					thumb_height=64, thumb_width=64
-				)
+					id="CryptoCompare%s" % time.time(),
+					title=service,
+					input_message_content=InputTextMessageContent(
+						convertion_results['result'][service],
+						parse_mode=ParseMode.MARKDOWN
+					),
+					description=convertion_results['result_inline'][service],
+					thumb_url=__thumb_url[service]["url"],
+					thumb_height=__thumb_url[service]["height"],
+					thumb_width=__thumb_url[service]["width"]
+					)
 			)
-		]
 	update.inline_query.answer(results)
 
 
-def coinSnap(bot, update, args):
-	if (len(args) > 2):
+def cmd_snap(bot, update, args):
+	if len(args) > 1:
 		# trop d'argument
-		update.message.reply_text("*ERROR - ERREUR*\n"
-								  "*Usage :* `snap coin0 coin1`\n"
-								  "_coin1 is optional, in this case, conversion done in USD_",
-								  parse_mode="Markdown")
+		update.message.reply_text(
+			"*Error :(*\n"
+			"*Usage :* `/snap <coin0>`\n",
+			parse_mode="Markdown"
+		)
 	else:
-		# si une seule monnaie a été spécifiée
-		if len(args) == 1:
-			# un seul argument a été passé (la monnaie qui nous intéresse)
-			# alors la conversion se fera par défaut vers l'USD
-			results = api_beach.api_coinmarketcap_getSnap(args[0], 'usd')
-		else:
-			# la conversion prend en considération deux monnaies
-			results = api_beach.api_coinmarketcap_getSnap(args[0], args[1])
-
-		if results["success"]==True:
-
-			# on prend une emoji représentation un changement positif/négatif
-			if results["result"]["change24"][0] == "-":
-				_signEmo = emojize(":small_red_triangle_down:", use_aliases=True)
+		# USD par défaut
+		_unit_source = args[0].lower()
+		_unit_target = "usd"
+		results = api_beach.api_coinmarketcap_get_snap(_unit_source, _unit_target)
+		# Check the results
+		if results["success"]:
+			# Emoji +/-
+			if results["result"]["change24"][0] == '-':
+				_change_sign = emojize(":small_red_triangle_down:", use_aliases=True)
 			else:
-				_signEmo = emojize(":small_red_triangle:", use_aliases=True)
-
-			# retour
-			update.message.reply_text("*%s* (_%s_)\n\n*Price :* `%s USD - %s BTC`\n*Chang. 24h :* `%s` %s \n*Vol. 24h :* `%s USD`" %
-											(args[0].upper(), results["result"]["coin_name"],  # la monnaie,
-											results["result"]["price_usd"],
-											results["result"]["price_btc"],
-											results["result"]["change24"],  # valeur du changement sur 24h
-											utils.helpers.escape_markdown(_signEmo),  # emoji affichange flèche haut/bas selon le changement
-											results["result"]["24volume_usd"]),
-										parse_mode=ParseMode.MARKDOWN)
+				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
+			# Retour
+			update.message.reply_text(
+				"*%s* (%s)\n\n*MarketCap:* `%s USD`\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s` %s \n*Vol. 24h:* `%s USD`" \
+				% (
+					args[0].upper(), results["result"]["coin_name"],
+					results["result"]["market_cap_usd"],
+					results["result"]["price_usd"],
+					results["result"]["price_btc"],
+					results["result"]["change24"],
+					utils.helpers.escape_markdown(_change_sign),
+					results["result"]["24volume_usd"]
+				),
+				parse_mode=ParseMode.MARKDOWN
+			)
 		else:
-			update.message.reply_text("*ERROR (#35)*", parse_mode=ParseMode.MARKDOWN)
+			update.message.reply_text("*Error :(*\n%s" % results["message"], parse_mode=ParseMode.MARKDOWN)
 
 
-def easterEgg(bot, update):
+def cmd_easter_egg(bot, update):
 	update.message.reply_photo("https://i.imgur.com/gzjl0yD.jpg")
 
-def help(bot, update):
+
+def cmd_help(bot, update):
 	"""Send a message when the command /help is issued."""
 	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN,  quote=True)
 
 
-# Un membre rejoint un groupe
-def new_member(bot, update):
+def event_group_join(bot, update):
+	"""Reply when a member joins the group."""
 	msg = update.message
 	# si le nouvel utilisateur est un bot, on ne dit rien
 	# ***à débattre !!
-	if not msg.new_chat_member.is_bot == True:
-		update.message.reply_text("Hello, %s." % msg.new_chat_member.username, quote=True)
+	if msg.new_chat_member.is_bot:
+		update.message.reply_text(
+			"`0x48656C6C6F2C20%s21`" % msg.new_chat_member.username.encode("hex").upper(),
+			parse_mode=ParseMode.MARKDOWN,
+			quote=True
+		)
+	else:
+		update.message.reply_text("Hello, %s." % msg.new_chat_member.first_name, quote=True)
 
-# Un membre quitte le groupe
-def quit_member(bot, update):
+
+def event_group_leave(bot, update):
+	"""Reply when a member leaves the group."""
 	msg = update.message
-	if not msg.new_chat_member.is_bot == True:
+	if not msg.new_chat_member.is_bot:
 		update.message.reply_text("Bye, %s." % msg.left_chat_member.username, quote=True)
 
 
@@ -212,18 +237,18 @@ def main():
 	dp = updater.dispatcher
 
 	# on different commands - answer in Telegram
-	dp.add_handler(CommandHandler("start", start))
-	dp.add_handler(CommandHandler("help", help))
-	dp.add_handler(CommandHandler("about", about))
-	dp.add_handler(CommandHandler("convert", convert, pass_args=True))
-	dp.add_handler(InlineQueryHandler(inlinequery))
-	dp.add_handler(CommandHandler("snap", coinSnap, pass_args=True))
-	dp.add_handler(CommandHandler("ticker", ticker, pass_args=True))
-	dp.add_handler(CommandHandler("keskifichou", easterEgg))
+	dp.add_handler(CommandHandler("start", cmd_start))
+	dp.add_handler(CommandHandler("help", cmd_help))
+	dp.add_handler(CommandHandler("about", cmd_about))
+	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
+	dp.add_handler(InlineQueryHandler(inline_query))
+	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
+	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
+	dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
 
 	# quand quelqu'un rejoint/quitte le chat
-	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, new_member))
-	dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, quit_member))
+	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
+	dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
 
 	# log all errors
 	dp.add_error_handler(error)
@@ -235,6 +260,9 @@ def main():
 	# SIGTERM or SIGABRT. This should be used most of the time, since
 	# start_polling() is non-blocking and will stop the bot gracefully.
 	updater.idle()
+
+	# Generate a coin list from CoinMarketCap
+	if not __debug: api_beach.generate_cmc_coinlist()
 
 
 if __name__ == '__main__':

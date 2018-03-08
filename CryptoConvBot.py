@@ -13,12 +13,12 @@ urllib3.disable_warnings()
 
 
 # Config
-dev = "jahus"  # ou mohus
-__debug = True
+dev = "bot"  # ou mohus ou jahus ou bot
+__debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.1814"
+__version__ = "2.1838"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -28,26 +28,45 @@ __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 # CONSTANTS
 __help = {
 	"fr":
-		"*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
-		"\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
-		"\n\n*INLINE MODE* %s\n"
-		"This bot can bot used in inline mode to convert, just write :\n"
-		"`@CryptoConvBot`"
-		% (emojize(":key:"), emojize(":arrow_right_hook:", use_aliases=True))
+		"*HELP* %s\n\n"
+		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
+		"\n\n*%s Ticker:*\n`/ticker <coin>`\n::` /ticker PND`"
+		"\n\n*%s Snapshot of a coin:*\n`/snap <coin>`\n::` /snap BCH`"
+		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
+		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
+		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @mohus."
+		"\n\n%s Use /about to learn more about me and my creators."
+		% (
+			emojize(":key:", use_aliases=True),
+			emojize(":arrows_counterclockwise:", use_aliases=True),
+			emojize(":eyes:", use_aliases=True),
+			emojize(":chart_with_upwards_trend:", use_aliases=True),
+			emojize(":arrow_right_hook:", use_aliases=True),
+			emojize(":nerd_face:", use_aliases=True),
+			emojize(":information_source:", use_aliases=True)
+		)
 }
-__ABOUT_TEXT = \
-	"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nSend /help to see how it works :\n\n" \
-	"*DONATIONS*\nIf you like our work, you can donate %s\n" \
-	"*ETH/ETC:* `%s`\n" \
-	"*XVG:* `%s`\n" \
-	"*PND:* `%s`\n" \
-	"*BTC/BCH:* `%s`\n" \
-	"Thanks !\n\n*Credits* :\n" \
-	"API from [CryptoCoinMarket](https://coinmarketcap.com)\n" \
-	"API from [Cryptonator](https://www.cryptonator.com)" \
-	% (
+__ABOUT_TEXT = (
+		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @mohus, %s @foudre."
+		"\n\n%s Send /help to see how it works."
+		"\n\n%s *Donations*"
+		"\n- *ETH/ETC:* `%s`"
+		"\n- *XVG:* `%s`"
+		"\n- *PND:* `%s`"
+		"\n- *BCH/BTC:* `%s`"
+		"\nThank you!"
+		"\n\n%s *Credits*"
+		"\n- API from [CryptoCoinMarket](https://coinmarketcap.com)"
+		"\n- API from [Cryptonator](https://www.cryptonator.com)"
+	) % (
 		__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
-		emojize(':beers:', use_aliases=True), __DONATION_ETH, __DONATION_XVG, __DONATION_PND, __DONATION_BTC
+		emojize(":key:", use_aliases=True),
+		emojize(':beers:', use_aliases=True),
+		__DONATION_ETH,
+		__DONATION_XVG,
+		__DONATION_PND,
+		__DONATION_BTC,
+		emojize(":linked_paperclips:", use_aliases=True)
 	)
 __thumb_url = {
 	"CryptoCompare": {
@@ -77,11 +96,6 @@ logger = logging.getLogger(__name__)
 
 # Define a dew command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
-
-
-def cmd_start(bot, update):
-	"""Send a message when the command /start is issued."""
-	update.message.reply_text('Hi !\nUse /help to see how I can help you.')
 
 
 def cmd_about(bot, update):
@@ -205,34 +219,109 @@ def cmd_easter_egg(bot, update):
 
 def cmd_help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
+	if update.effective_chat.type == "private":
+		update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
+	else:
+		update.message.reply_text(
+			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=help)."
+			% (emojize(":nerd_face:"), __bot_name),
+			quote=True,
+			parse_mode=ParseMode.MARKDOWN,
+			disable_web_page_preview=True,
+		)
 
 
 def event_group_join(bot, update):
 	"""Reply when a member joins the group."""
-	msg = update.message
-	# si le nouvel utilisateur est un bot, on ne dit rien
-	# ***à débattre !!
-	if msg.new_chat_member.is_bot:
-		update.message.reply_text(
-			"`0x48656C6C6F2C20%s21`" % msg.new_chat_member.username.encode("hex").upper(),
-			parse_mode=ParseMode.MARKDOWN,
-			quote=True
-		)
-	else:
-		update.message.reply_text("Hello, %s." % msg.new_chat_member.first_name, quote=True)
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if len(update.message.new_chat_members) == 1 and update.message.new_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.new_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text(
+				"Hello, %s." % ', '.join([user.first_name for user in update.message.new_chat_members]),
+				quote=True
+			)
 
 
 def event_group_leave(bot, update):
 	"""Reply when a member leaves the group."""
-	msg = update.message
-	if not msg.new_chat_member.is_bot:
-		update.message.reply_text("Bye, %s." % msg.left_chat_member.username, quote=True)
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if update.message.left_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.left_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text("Bye, %s." % update.message.left_chat_member.first_name, quote=True)
+
+
+def save_config():
+	Helper.save_file_json("config.json", config)
+
+
+def cmd_greetings(bot, update, args):
+	"""Disable greetings """
+	if args[0].lower() == "on":
+		_activate = True
+	elif args[0].lower() == "off":
+		_activate = False
+	else:
+		_activate = None
+	_check_admins = False
+	_do = False
+	if update.effective_chat.type in ["group", "supergroup"] and _activate is not None:
+		if str(update.effective_chat.id) in config["greetings"]:
+			if config["greetings"][str(update.effective_chat.id)] is not _activate:
+				_check_admins = True
+		else:
+			_check_admins = True
+	if _check_admins:
+		if update.effective_chat.all_members_are_administrators:
+			_do = True
+			print("dew it")
+		else:
+			_admins = update.effective_chat.get_administrators() # Type: telegram.ChatMember
+			if update.effective_user.id in [admin.user.id for admin in _admins]:
+				_do = True
+				print("dew it")
+	if _do:
+		config["greetings"][str(update.effective_chat.id)] = _activate
+		save_config()
+		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
 
 
 def error(bot, update, error):
 	"""Log Errors caused by Updates."""
 	logger.warning('Update "%s" caused error "%s"', update, error)
+
+
+def cmd_start(bot, update, args):
+	"""Send a message when the command /start is issued."""
+	if update.effective_chat.type == "private":
+		# Check if deep link
+		if len(args) > 0:
+			if args[0].lower() == "about":
+				cmd_about(bot, update)
+			elif args[0].lower() == "help":
+				cmd_help(bot, update)
+			else:
+				update.message.reply_text(
+					'%s Bad deep link.\nUse /help to see how I can help you.'
+					% emojize(":thinking_face:", use_aliases=True)
+				)
+		else:
+			update.message.reply_text('Hi !\nUse /help to see how I can help you.')
 
 
 def main():
@@ -244,14 +333,15 @@ def main():
 	dp = updater.dispatcher
 
 	# on different commands - answer in Telegram
-	dp.add_handler(CommandHandler("start", cmd_start))
+	dp.add_handler(CommandHandler("start", cmd_start, pass_args=True))
 	dp.add_handler(CommandHandler("help", cmd_help))
 	dp.add_handler(CommandHandler("about", cmd_about))
 	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
 	dp.add_handler(InlineQueryHandler(inline_query))
 	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
 	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
-	dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	#dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	dp.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
 
 	# quand quelqu'un rejoint/quitte le chat
 	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))

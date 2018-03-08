@@ -13,8 +13,8 @@ urllib3.disable_warnings()
 
 
 # Config
-dev = "jahus"  # ou mohus
-__debug = True
+dev = "bot"  # ou mohus ou jahus ou bot
+__debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
@@ -81,7 +81,8 @@ logger = logging.getLogger(__name__)
 
 def cmd_start(bot, update):
 	"""Send a message when the command /start is issued."""
-	update.message.reply_text('Hi !\nUse /help to see how I can help you.')
+	if update.effective_chat.type == "private":
+		update.message.reply_text('Hi !\nUse /help to see how I can help you.')
 
 
 def cmd_about(bot, update):
@@ -205,29 +206,86 @@ def cmd_easter_egg(bot, update):
 
 def cmd_help(bot, update):
 	"""Send a message when the command /help is issued."""
-	update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
+	if update.effective_chat.type == "private":
+		update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
+	else:
+		update.message.reply_text(
+			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)."
+			% (emojize(":nerd_face:"), __bot_name),
+			quote=True,
+			parse_mode=ParseMode.MARKDOWN,
+			disable_web_page_preview=True,
+		)
 
 
 def event_group_join(bot, update):
 	"""Reply when a member joins the group."""
-	msg = update.message
-	# si le nouvel utilisateur est un bot, on ne dit rien
-	# ***à débattre !!
-	if msg.new_chat_member.is_bot:
-		update.message.reply_text(
-			"`0x48656C6C6F2C20%s21`" % msg.new_chat_member.username.encode("hex").upper(),
-			parse_mode=ParseMode.MARKDOWN,
-			quote=True
-		)
-	else:
-		update.message.reply_text("Hello, %s." % msg.new_chat_member.first_name, quote=True)
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if len(update.message.new_chat_members) == 1 and update.message.new_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.new_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text(
+				"Hello, %s." % ', '.join([user.first_name for user in update.message.new_chat_members]),
+				quote=True
+			)
 
 
 def event_group_leave(bot, update):
 	"""Reply when a member leaves the group."""
-	msg = update.message
-	if not msg.new_chat_member.is_bot:
-		update.message.reply_text("Bye, %s." % msg.left_chat_member.username, quote=True)
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if update.message.left_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.left_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text("Bye, %s." % update.message.left_chat_member.first_name, quote=True)
+
+
+def save_config():
+	Helper.save_file_json("config.json", config)
+
+
+def cmd_greetings(bot, update, args):
+	"""Disable greetings """
+	if args[0].lower() == "on":
+		_activate = True
+	elif args[0].lower() == "off":
+		_activate = False
+	else:
+		_activate = None
+	_check_admins = False
+	_do = False
+	if update.effective_chat.type in ["group", "supergroup"] and _activate is not None:
+		if str(update.effective_chat.id) in config["greetings"]:
+			if config["greetings"][str(update.effective_chat.id)] is not _activate:
+				_check_admins = True
+		else:
+			_check_admins = True
+	if _check_admins:
+		if update.effective_chat.all_members_are_administrators:
+			_do = True
+			print("dew it")
+		else:
+			_admins = update.effective_chat.get_administrators() # Type: telegram.ChatMember
+			if update.effective_user.id in [admin.user.id for admin in _admins]:
+				_do = True
+				print("dew it")
+	if _do:
+		config["greetings"][str(update.effective_chat.id)] = _activate
+		save_config()
+		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
 
 
 def error(bot, update, error):
@@ -251,7 +309,8 @@ def main():
 	dp.add_handler(InlineQueryHandler(inline_query))
 	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
 	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
-	dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	#dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	dp.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
 
 	# quand quelqu'un rejoint/quitte le chat
 	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))

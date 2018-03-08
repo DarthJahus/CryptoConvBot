@@ -13,7 +13,7 @@ urllib3.disable_warnings()
 
 
 # Config
-dev = "jahus"  # ou mohus ou jahus ou bot
+dev = "bot"  # ou mohus ou jahus ou bot
 __debug = False
 config = Helper.load_file_json("config.json")
 

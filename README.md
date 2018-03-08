@@ -32,4 +32,4 @@ Run `CryptoConvBot.py` file.
 
 ## Licence
 
-<img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png" alt="CC-BY-SA"/>
+<a href="https://creativecommons.org/licenses/by-sa/3.0/"><img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png" alt="CC-BY-SA"/></a>

@@ -13,12 +13,12 @@ urllib3.disable_warnings()
 
 
 # Config
-dev = "bot"  # ou mohus ou jahus ou bot
+dev = "jahus"  # ou mohus ou jahus ou bot
 __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.1814"
+__version__ = "2.1838"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -28,26 +28,45 @@ __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 # CONSTANTS
 __help = {
 	"fr":
-		"*HELP* %s\n\n*Conversion :*\n/convert amount coin1 coin2\n::` /convert 1 ETH USD`"
-		"\n\n*Get ticker :*\n/ticker coin\n::`  /ticker BCH`\n\n*Get snapshot of coin :*\n/snap coin\n::`  /snap ETH`"
-		"\n\n*INLINE MODE* %s\n"
-		"This bot can bot used in inline mode to convert, just write :\n"
-		"`@CryptoConvBot`"
-		% (emojize(":key:"), emojize(":arrow_right_hook:", use_aliases=True))
+		"*HELP* %s\n\n"
+		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
+		"\n\n*%s Ticker:*\n`/ticker <coin>`\n::` /ticker PND`"
+		"\n\n*%s Snapshot of a coin:*\n`/snap <coin>`\n::` /snap BCH`"
+		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
+		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
+		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @mohus."
+		"\n\n%s Use /about to learn more about me and my creators."
+		% (
+			emojize(":key:", use_aliases=True),
+			emojize(":arrows_counterclockwise:", use_aliases=True),
+			emojize(":eyes:", use_aliases=True),
+			emojize(":chart_with_upwards_trend:", use_aliases=True),
+			emojize(":arrow_right_hook:", use_aliases=True),
+			emojize(":nerd_face:", use_aliases=True),
+			emojize(":information_source:", use_aliases=True)
+		)
 }
-__ABOUT_TEXT = \
-	"*CryptoConBot v %s*\nby %s @Jahus, %s @mohus, %s @foudre.\n\nSend /help to see how it works :\n\n" \
-	"*DONATIONS*\nIf you like our work, you can donate %s\n" \
-	"*ETH/ETC:* `%s`\n" \
-	"*XVG:* `%s`\n" \
-	"*PND:* `%s`\n" \
-	"*BTC/BCH:* `%s`\n" \
-	"Thanks !\n\n*Credits* :\n" \
-	"API from [CryptoCoinMarket](https://coinmarketcap.com)\n" \
-	"API from [Cryptonator](https://www.cryptonator.com)" \
-	% (
+__ABOUT_TEXT = (
+		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @mohus, %s @foudre."
+		"\n\n%s Send /help to see how it works."
+		"\n\n%s *Donations*"
+		"\n- *ETH/ETC:* `%s`"
+		"\n- *XVG:* `%s`"
+		"\n- *PND:* `%s`"
+		"\n- *BCH/BTC:* `%s`"
+		"\nThank you!"
+		"\n\n%s *Credits*"
+		"\n- API from [CryptoCoinMarket](https://coinmarketcap.com)"
+		"\n- API from [Cryptonator](https://www.cryptonator.com)"
+	) % (
 		__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
-		emojize(':beers:', use_aliases=True), __DONATION_ETH, __DONATION_XVG, __DONATION_PND, __DONATION_BTC
+		emojize(":key:", use_aliases=True),
+		emojize(':beers:', use_aliases=True),
+		__DONATION_ETH,
+		__DONATION_XVG,
+		__DONATION_PND,
+		__DONATION_BTC,
+		emojize(":linked_paperclips:", use_aliases=True)
 	)
 __thumb_url = {
 	"CryptoCompare": {

@@ -98,12 +98,6 @@ logger = logging.getLogger(__name__)
 # update. Error handlers also receive the raised TelegramError object in error.
 
 
-def cmd_start(bot, update):
-	"""Send a message when the command /start is issued."""
-	if update.effective_chat.type == "private":
-		update.message.reply_text('Hi !\nUse /help to see how I can help you.')
-
-
 def cmd_about(bot, update):
 	"""Send a message when the command /start is issued."""
 
@@ -229,7 +223,7 @@ def cmd_help(bot, update):
 		update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
 	else:
 		update.message.reply_text(
-			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)."
+			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=help)."
 			% (emojize(":nerd_face:"), __bot_name),
 			quote=True,
 			parse_mode=ParseMode.MARKDOWN,
@@ -312,6 +306,24 @@ def error(bot, update, error):
 	logger.warning('Update "%s" caused error "%s"', update, error)
 
 
+def cmd_start(bot, update, args):
+	"""Send a message when the command /start is issued."""
+	if update.effective_chat.type == "private":
+		# Check if deep link
+		if len(args) > 0:
+			if args[0].lower() == "about":
+				cmd_about(bot, update)
+			elif args[0].lower() == "help":
+				cmd_help(bot, update)
+			else:
+				update.message.reply_text(
+					'%s Bad deep link.\nUse /help to see how I can help you.'
+					% emojize(":thinking_face:", use_aliases=True)
+				)
+		else:
+			update.message.reply_text('Hi !\nUse /help to see how I can help you.')
+
+
 def main():
 	"""Start the bot."""
 	# Create the EventHandler and pass it your bot's token.
@@ -321,7 +333,7 @@ def main():
 	dp = updater.dispatcher
 
 	# on different commands - answer in Telegram
-	dp.add_handler(CommandHandler("start", cmd_start))
+	dp.add_handler(CommandHandler("start", cmd_start, pass_args=True))
 	dp.add_handler(CommandHandler("help", cmd_help))
 	dp.add_handler(CommandHandler("about", cmd_about))
 	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))

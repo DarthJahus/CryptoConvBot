@@ -172,14 +172,15 @@ def api_convert_coin(args, inline_call):
 
 
 def convert(args):
-	if len(args) in [2, 3]:
-		results_tmp = api_convert_coin(args, inline_call=False)
-		results = []
-		if not results_tmp["success"]:
-			results.append("*Error :(*\n_%s_\nFailed to convert. Sorry." % results_tmp["result"])
-		else:
-			for service in results_tmp["result"]:
-				results.append(results_tmp["result"][service])
-		return '\n'.join(results)
+	"""
+	Provide 2 or 3 args
+	And perform len(args) check BEFORE calling this function.
+	"""
+	results_tmp = api_convert_coin(args, inline_call=False)
+	results = []
+	if not results_tmp["success"]:
+		results.append("*Error :(*\n_%s_\nFailed to convert. Sorry." % results_tmp["result"])
 	else:
-		print("Error: Invalid query: %s" % args)
+		for service in results_tmp["result"]:
+			results.append(results_tmp["result"][service])
+	return '\n'.join(results)

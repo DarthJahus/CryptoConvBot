@@ -1,8 +1,7 @@
-**INSTALLER SUR**
-_**Python : 2.x**_
+# Install
 
+**Woks on _Python 2.x_**
 
-
-lancer la commande :
+Lancer la commande :
 
     pip install -r reqs.txt

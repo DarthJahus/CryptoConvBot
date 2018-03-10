@@ -1,4 +1,8 @@
-import json
+import json, time, codecs
+from datetime import datetime
+
+
+__debug = False
 
 
 def load_file_json(file_name):
@@ -13,3 +17,19 @@ def save_file_json(file_name, args):
 	with open(file_name, 'w') as _file:
 		json.dump(args, _file, ensure_ascii=False, encoding="utf-8")
 		_file.close()
+
+
+def log(command, user_id, chat_id, result):
+	"""
+	Log in a CSV file
+	Header is:
+	"time", "command", "user_id", "chat_id", "result"
+	Time is in local-time
+	"""
+	_log = (
+		datetime.fromtimestamp(time.time()).strftime("%Y-%m-%dT%H:%M:%S") + ',' +
+		','.join([command, str(user_id), str(chat_id), "\"" + result + "\""]) + "\n"
+	)
+	with codecs.open("log.csv", 'a', "utf-8") as _file:
+		_file.write(_log)
+		if __debug: print("*log = " + _log)

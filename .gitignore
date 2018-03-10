@@ -149,3 +149,6 @@ venv1/bin/wheel
 venv1/include/python2\.7
 
 venv1/pip-selfcheck\.json
+
+# Log
+log.csv

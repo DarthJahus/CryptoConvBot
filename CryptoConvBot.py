@@ -2,7 +2,7 @@
 # CryptoConvBot 2
 
 import logging
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, utils
+from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
 from Converter import convert, api_convert_coin
 from emoji import emojize
@@ -10,15 +10,17 @@ import HelperFunctions as Helper
 import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
+from datetime import datetime
+import time
 
 
 # Config
-dev = "bot"  # ou mohus ou jahus ou bot
+dev = "jahus"  # ou mohus ou jahus ou bot
 __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.1838"
+__version__ = "2.180310"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -27,7 +29,7 @@ __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 
 # CONSTANTS
 __help = {
-	"fr":
+	"en":
 		"*HELP* %s\n\n"
 		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
 		"\n\n*%s Ticker:*\n`/ticker <coin>`\n::` /ticker PND`"
@@ -100,8 +102,10 @@ logger = logging.getLogger(__name__)
 
 def cmd_about(bot, update):
 	"""Send a message when the command /start is issued."""
-
+	_cmd_name = "cmd_about"
+	_result = None
 	if update.effective_chat.type == "private":
+		_result = "*msg__about"
 		update.message.reply_text(
 			__ABOUT_TEXT,
 			quote=True,
@@ -109,6 +113,7 @@ def cmd_about(bot, update):
 			disable_web_page_preview=True
 		)
 	else:
+		_result = "error__private_command_in_public"
 		update.message.reply_text(
 			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)."
 			% (emojize(":nerd_face:"), __bot_name),
@@ -116,17 +121,37 @@ def cmd_about(bot, update):
 			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True,
 		)
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_convert(bot, update, args):
-	update.message.reply_text(convert(args), parse_mode=ParseMode.MARKDOWN, quote=True)
+	_cmd_name = "cmd_convert"
+	if len(args) in [2, 3]:
+		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
+		_message = convert(args)
+	else:
+		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
+		_message = "Error: Invalid query:\n%s" % args
+	update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
+	Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_ticker(bot, update, args):
-	update.message.reply_text(convert([args[0], "btc"]), parse_mode=ParseMode.MARKDOWN, quote=True)
+	_cmd_name = "cmd_convert"
+	if len(args) == 1:
+		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
+		_message = convert([args[0], "btc"])
+	else:
+		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
+		_message = "Error: Invalid query:\n%s" % args
+	update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
+	Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def inline_query(bot, update):
+	_cmd_name = "inline"
+	_result = None
+
 	query = update.inline_query.query
 
 	if not query:
@@ -172,12 +197,17 @@ def inline_query(bot, update):
 				)
 			)
 			_res_id+=1
+		_result = "[%s]" % ', '.join(query.split()).replace('\n', '\\n')
 	update.inline_query.answer(results)
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, "", _result)
 
 
 def cmd_snap(bot, update, args):
+	_cmd_name = "cmd_snap"
+	_result = None
 	if len(args) > 1:
-		# trop d'argument
+		# too many arguments
+		_result = "*error__too_many_args"
 		update.message.reply_text(
 			"*Error :(*\n"
 			"*Usage :* `/snap <coin0>`\n",
@@ -187,30 +217,33 @@ def cmd_snap(bot, update, args):
 		# USD par défaut
 		_unit_source = args[0].lower()
 		_unit_target = "usd"
-		results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
+		_results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
 		# Check the results
-		if results["success"]:
+		if _results["success"]:
 			# Emoji +/-
-			if results["result"]["change24"][0] == '-':
+			if _results["result"]["change24"][0] == '-':
 				_change_sign = emojize(":small_red_triangle_down:", use_aliases=True)
 			else:
 				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
-			# Retour
+			# Answer
 			update.message.reply_text(
 				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s%%` %s\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
 				% (
-					args[0].upper(), results["result"]["coin_name"],
-					results["result"]["price_usd"],
-					results["result"]["price_btc"],
-					results["result"]["change24"],
+					args[0].upper(), _results["result"]["coin_name"],
+					_results["result"]["price_usd"],
+					_results["result"]["price_btc"],
+					_results["result"]["change24"],
 					_change_sign, # utils.helpers.escape_markdown(_change_sign),
-					results["result"]["24volume_usd"],
-					results["result"]["market_cap_usd"]
+					_results["result"]["24volume_usd"],
+					_results["result"]["market_cap_usd"]
 				),
 				parse_mode=ParseMode.MARKDOWN
 			)
+			_result = _unit_source
 		else:
-			update.message.reply_text("*Error :(*\n%s" % results["message"], parse_mode=ParseMode.MARKDOWN)
+			_result = "*error__api_snap(%s)" % _unit_source
+			update.message.reply_text("*Error :(*\n%s" % _results["message"], parse_mode=ParseMode.MARKDOWN)
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_easter_egg(bot, update):
@@ -219,9 +252,13 @@ def cmd_easter_egg(bot, update):
 
 def cmd_help(bot, update):
 	"""Send a message when the command /help is issued."""
+	_cmd_name = "cmd_help"
+	_result = None
 	if update.effective_chat.type == "private":
-		update.message.reply_text(__help["fr"], parse_mode=ParseMode.MARKDOWN, quote=True)
+		_result = "*msg__help"
+		update.message.reply_text(__help["en"], parse_mode=ParseMode.MARKDOWN, quote=True)
 	else:
+		_result = "*error__private_command_in_public"
 		update.message.reply_text(
 			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=help)."
 			% (emojize(":nerd_face:"), __bot_name),
@@ -229,6 +266,7 @@ def cmd_help(bot, update):
 			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True,
 		)
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def event_group_join(bot, update):
@@ -272,6 +310,8 @@ def save_config():
 
 def cmd_greetings(bot, update, args):
 	"""Disable greetings """
+	_cmd_name = "cmd_greetings"
+	_result = None
 	if args[0].lower() == "on":
 		_activate = True
 	elif args[0].lower() == "off":
@@ -299,6 +339,8 @@ def cmd_greetings(bot, update, args):
 		config["greetings"][str(update.effective_chat.id)] = _activate
 		save_config()
 		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
+		_result = "*greetings %s > %s" % (str(not _activate), str(_activate))
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def error(bot, update, error):
@@ -308,6 +350,8 @@ def error(bot, update, error):
 
 def cmd_start(bot, update, args):
 	"""Send a message when the command /start is issued."""
+	_cmd_name = "cmd_start"
+	_result = None
 	if update.effective_chat.type == "private":
 		# Check if deep link
 		if len(args) > 0:
@@ -316,12 +360,36 @@ def cmd_start(bot, update, args):
 			elif args[0].lower() == "help":
 				cmd_help(bot, update)
 			else:
+				_result = "*error__bad_deep_link"
 				update.message.reply_text(
 					'%s Bad deep link.\nUse /help to see how I can help you.'
-					% emojize(":thinking_face:", use_aliases=True)
+					 % emojize(":thinking_face:", use_aliases=True)
 				)
 		else:
+			_result = "*msg__start"
 			update.message.reply_text('Hi !\nUse /help to see how I can help you.')
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+
+
+def cmd_send_log(bot, update):
+	"""
+	Send logs to (admin) user
+	"""
+	_cmd_name = "cmd_send_log"
+	_result = None
+	# Check if admin
+	if update.effective_chat.id in config["admins"]:
+		_result = str(update.effective_user.id)
+		with open("log.csv", "rb") as _file:
+			_file_name = "%s-log-%s.csv" % (config["bot_name"], datetime.fromtimestamp(time.time()).strftime("%Y-%m-%dT%H-%M-%S"))
+			bot.sendDocument(
+				chat_id=update.effective_user.id,
+				document=_file,
+				reply_to_message_id=update.message.message_id,
+				caption="Here you are!",
+				filename=_file_name
+			)
+	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def main():
@@ -337,11 +405,12 @@ def main():
 	dp.add_handler(CommandHandler("help", cmd_help))
 	dp.add_handler(CommandHandler("about", cmd_about))
 	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
-	dp.add_handler(InlineQueryHandler(inline_query))
 	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
 	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
 	#dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
 	dp.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
+	dp.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
+	dp.add_handler(InlineQueryHandler(inline_query))
 
 	# quand quelqu'un rejoint/quitte le chat
 	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
@@ -363,4 +432,5 @@ def main():
 
 
 if __name__ == '__main__':
+	Helper.log("__main__", "", "", "")
 	main()

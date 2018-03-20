@@ -15,12 +15,12 @@ import time
 
 
 # Config
-dev = "jahus"  # ou mohus ou jahus ou bot
+dev = "bot"  # ou mohus ou jahus ou bot
 __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.180310"
+__version__ = "2.180320"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -71,18 +71,18 @@ __ABOUT_TEXT = (
 		emojize(":linked_paperclips:", use_aliases=True)
 	)
 __thumb_url = {
-	"CryptoCompare": {
-		"url": "https://i.imgur.com/LAOOxhM.png",
+	"Cryptonator": {
+		"url": "https://i.imgur.com/4Shr41n.png",
 		"width": 64,
 		"height": 64
 	},
-	"Cryptonator": {
-		"url": "https://i.imgur.com/SoeT9GX.png",
+	"CryptoCompare": {
+		"url": "https://i.imgur.com/FWEOyTT.png",
 		"width": 64,
 		"height": 64
 	},
 	"error": {
-		"url": "https://i.imgur.com/vyxEwc9.png",
+		"url": "https://i.imgur.com/AWeJubR.png",
 		"width": 64,
 		"height": 64
 	}
@@ -129,11 +129,15 @@ def cmd_convert(bot, update, args):
 	if len(args) in [2, 3]:
 		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
 		_message = convert(args)
+	elif len(args) == 0:
+		_result = None
+		_message = None
 	else:
 		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
 		_message = "Error: Invalid query:\n%s" % args
-	update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
-	Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None:
+		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
+		Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_ticker(bot, update, args):
@@ -141,11 +145,15 @@ def cmd_ticker(bot, update, args):
 	if len(args) == 1:
 		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
 		_message = convert([args[0], "btc"])
+	elif len(args) == 0:
+		_result = None
+		_message = None
 	else:
 		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
 		_message = "Error: Invalid query:\n%s" % args
-	update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
-	Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None:
+		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
+		Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def inline_query(bot, update):

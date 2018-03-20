@@ -3,8 +3,8 @@
 #### Version 2.180320
 
 * New images for inline mode (Cryptonator, CryptoCompare, BSoD)
-    >
-    > <img src="https://i.imgur.com/4Shr41n.png" alt="Cryptonator"/>&nbsp;<img src="https://i.imgur.com/FWEOyTT.png" alt="CryptoCompare"/>&nbsp;<img src="https://i.imgur.com/AWeJubR.png" alt="BSoD"/>
+
+<img src="https://i.imgur.com/4Shr41n.png" alt="Cryptonator"/>&nbsp;<img src="https://i.imgur.com/FWEOyTT.png" alt="CryptoCompare"/>&nbsp;<img src="https://i.imgur.com/AWeJubR.png" alt="BSoD"/>
 
 #### Version 2.180316
 

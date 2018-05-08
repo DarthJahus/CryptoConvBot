@@ -1,4 +1,4 @@
-#!/usr/bin/python -p
+#!/usr/bin/python
 #coding=utf-8
 
 # CryptoConvBot 2

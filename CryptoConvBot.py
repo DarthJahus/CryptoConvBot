@@ -15,7 +15,7 @@ import time
 
 
 # Config
-__dev = "bot"  # ou mohus ou jahus ou bot
+__dev = "test"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
 
@@ -422,26 +422,40 @@ def bot_set_handlers(dispatcher):
 	dispatcher.add_error_handler(error)
 
 
-def main():
-	"""Start the bot."""
+def bot_init():
 	# Create the EventHandler and pass it your bot's token.
 	updater = Updater(config["token"][__dev])
-
 	# Get the dispatcher to register handlers
 	bot_set_handlers(updater.dispatcher)
-
 	# Start the Bot
-	updater.start_polling()
-
+	if config["webhook"]["enable"]:
+		updater.start_webhook(
+			listen="0.0.0.0",
+			port=config["webhook"]["port"],
+			url_path=config["token"][__dev],
+			key="server.key",
+			cert="server.pem",
+			webhook_url="%(url)s:%(port)s/" % (config["webhook"]) + config["token"][__dev]
+		)
+	else:
+		updater.start_polling()
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT. This should be used most of the time, since
 	# start_polling() is non-blocking and will stop the bot gracefully.
 	updater.idle()
 
+
+def main():
+	"""Start the bot."""
+	bot_init()
 	# Generate a coin list from CoinMarketCap
 	if not __debug: api_coinmarketcap.generate_cmc_coinlist()
 
 
 if __name__ == '__main__':
+	#try:
+	#	assert not config["webhook"]["enable"]
 	Helper.log("__main__", "", "", "")
 	main()
+	#except AssertionError:
+	#	print("Can't run the bot: Webhook is enabled.")

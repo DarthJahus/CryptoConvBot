@@ -1,1 +1,19 @@
-{"token": {"jahus": "196246475:AAHwh2hn3bkz5RcN7RmZlpj9FfnxKR_25Ns", "mohus": "500043374:AAG7k0ksAhO-L6KXy8qBGXn3THda16t1Whg", "bot": "178947289:AAGvzdvElIU_x8oaF06biLqKvos7-MIcVB0"}, "greetings": {"-1": true}, "admins": [67026917, 90930757], "bot_name": "CryptoConvBot"}
+{
+  "token": {
+	"test": "573445478:AAHwmEYnb7eX4ej3T6AGTHJgbhqMv-nKeJs",
+	"bot": "178947289:AAGvzdvElIU_x8oaF06biLqKvos7-MIcVB0"
+  },
+  "webhook": {
+	"enable": true,
+	"url": "https://cconvbot.oldandwise.org",
+	"port": 8443
+  },
+  "greetings": {
+	"-1": true
+  },
+  "admins": [
+	67026917,
+	90930757
+  ],
+  "bot_name": "CryptoConvBot"
+}

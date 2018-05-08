@@ -45,11 +45,11 @@ This bot can get updates from Telegram in two ways:
 
 WebHook asks Telegram to communicate with your server. The requests are done through HTTPS (Telegram doesn't support HTTP).
 
-#####Set up a domain name
+**Set up a domain name**
 
 Your server needs to be reachable at the same address. If you have no fixed IP and domain name, you can set up a Dyn-DNS for free.
 
-####Generate an SSL certificate
+**Generate an SSL certificate**
 
 If you have no certificate for your domain name, you can still generate your own with OpenSSL. It is enough for Telegram.
 
@@ -58,7 +58,7 @@ If you have no certificate for your domain name, you can still generate your own
 The only required field is the `CommonName`. It has to be equal to your domain name (ex. `convbot.ddns.net`).<br/>
 Once generated, move the `server.key` and `server.pem` files to your bot's directory.
 
-####**Enable WebHook in configuration file**
+**Enable WebHook in configuration file**
 
 In `config.json`, under the `webhook` section:
 

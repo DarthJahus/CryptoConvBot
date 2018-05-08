@@ -6,7 +6,7 @@
   "webhook": {
 	"enable": true,
 	"url": "https://cconvbot.oldandwise.org",
-	"port": 8443
+	"port": 443
   },
   "greetings": {
 	"-1": true

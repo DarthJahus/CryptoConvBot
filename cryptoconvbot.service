@@ -1,5 +1,10 @@
 # Put this in /lib/systemd/system/cryptoconvbot.service
-# Set chmod 644 /lib/systemd/system/cryptoconvbot.service
+# cp ./cryptoconvbot.service /lib/systemd/system/cryptoconvbot.service
+# Set mode 644
+# chmod 644 /lib/systemd/system/cryptoconvbot.service
+# Add to systemctl
+# systemctl daemon-reload
+# systemctl enable cryptoconvbot.service
 
 [Unit]
 Description=CryptoConvBot
@@ -7,7 +12,7 @@ After=syslog.target
 After=network.target
 
 [Service]
-Type=simple
+Type=idle
 ExecStart=/bots/CryptoConvBot/CryptoConvBot.py
 WorkingDirectory=/bots/CryptoConvBot/
 Restart=always

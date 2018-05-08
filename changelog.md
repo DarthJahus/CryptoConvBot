@@ -1,5 +1,10 @@
 # Changelog
 
+#### version 3.1 (18/05/08)
+
+* Add WebHook support
+* Refactored bot initialisation
+
 #### Version 2.180320
 
 * New images for inline mode (Cryptonator, CryptoCompare, BSoD)

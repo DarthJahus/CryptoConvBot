@@ -12,12 +12,9 @@ After=syslog.target
 After=network.target
 
 [Service]
-Type=idle
+Type=simple
 ExecStart=/bots/CryptoConvBot/CryptoConvBot.py
 WorkingDirectory=/bots/CryptoConvBot/
-Restart=always
-RestartSec=600
 
 [Install]
 WantedBy=multi-user.target
-Alias=CryptoConv.bot

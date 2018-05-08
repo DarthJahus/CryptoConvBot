@@ -224,26 +224,36 @@ def cmd_snap(bot, update, args):
 			parse_mode="Markdown"
 		)
 	else:
-		# USD par défaut
+		# ETH by default, for @Seynon, USD is still retrieved
 		_unit_source = args[0].lower()
-		_unit_target = "usd"
+		_unit_target = "eth"
 		_results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
 		# Check the results
 		if _results["success"]:
-			# Emoji +/-
+			# Emoji +/- for change on 24h
 			if _results["result"]["change24"][0] == '-':
-				_change_sign = emojize(":small_red_triangle_down:", use_aliases=True)
+				_change_sign_24 = emojize(":small_red_triangle_down:", use_aliases=True)
 			else:
-				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
+				_change_sign_24 = emojize(":small_red_triangle:", use_aliases=True)
+				_results["result"]["change24"] = "+" + _results["result"]["change24"]
+			# Emoji +/- for change on 7d
+			if _results["result"]["change7d"][0] == "-":
+				_change_sign_7 = emojize(":small_red_triangle_down:", use_aliases=True)
+			else:
+				_change_sign_7 = emojize(":small_red_triangle:", use_aliases=True)
+				_results["result"]["change7d"] = "+" + _results["result"]["change7d"]
 			# Answer
 			update.message.reply_text(
-				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s%%` %s\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
+				"*%s* (%s)\n\n*Price:* `%s USD`\n`%s BTC | %s ETH`\n\n*Change 24 h:* `%s%%` %s\n*Change 7 d:* `%s%%` %s\n\n*Vol. 24 h:* `%s USD`\n*MarketCap:* `%s USD`" \
 				% (
 					args[0].upper(), _results["result"]["coin_name"],
 					_results["result"]["price_usd"],
 					_results["result"]["price_btc"],
+					_results["result"]["price_eth"],
 					_results["result"]["change24"],
-					_change_sign, # utils.helpers.escape_markdown(_change_sign),
+					_change_sign_24, # utils.helpers.escape_markdown(_change_sign),
+					_results["result"]["change7d"],
+					_change_sign_7,
 					_results["result"]["24volume_usd"],
 					_results["result"]["market_cap_usd"]
 				),
@@ -253,7 +263,6 @@ def cmd_snap(bot, update, args):
 		else:
 			_result = "*error__api_snap(%s)" % _unit_source
 			update.message.reply_text("*Error :(*\n%s" % _results["message"], parse_mode=ParseMode.MARKDOWN)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_easter_egg(bot, update):

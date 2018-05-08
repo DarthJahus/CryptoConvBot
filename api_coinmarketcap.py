@@ -49,8 +49,8 @@ def generate_cmc_coinlist():
 
 def get_snap(coin_0, coin_1):
 	try:
-		# on prend le symbole de la monnaie depuis la liste
-		# monnaie envoyée en arg en majuscules
+		# We take the symbol of the currency from the list
+		# Coin0 has to be sent UPPERCASE
 		_coin_0 = get_cmc_symbol(coin_0.upper())
 		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1.upper()))
 		if req.status_code != 200:
@@ -62,12 +62,14 @@ def get_snap(coin_0, coin_1):
 			_volume24h_USD = req_dict[0]['24h_volume_usd']
 			_price_USD = req_dict[0]['price_usd']
 			_price_BTC = req_dict[0]['price_btc']
+			_price_ETH = req_dict[0]['price_eth'] # Warning: coin_1 needs to be "ETH"
 			_market_cap_usd = req_dict[0]["market_cap_usd"]
 			return {
 				"success": True,
 				"result": {
 					"price_usd": _price_USD,
 					"price_btc": _price_BTC,
+					"price_eth": _price_ETH,
 					"change24" : _change24h,
 					"change7d" : _change7d,
 					"coin_name" : _coin_0,

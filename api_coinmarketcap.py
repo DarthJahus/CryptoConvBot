@@ -1,7 +1,7 @@
 # coding=utf-8
 import requests
 import time
-import HelperFunctions as Helper
+import helperfunctions as Helper
 import urllib3
 urllib3.disable_warnings()
 

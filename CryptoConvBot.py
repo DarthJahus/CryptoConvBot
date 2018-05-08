@@ -6,7 +6,7 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
 from Converter import convert, api_convert_coin
 from emoji import emojize
-import HelperFunctions as Helper
+import helperfunctions as Helper
 import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
@@ -15,7 +15,7 @@ import time
 
 
 # Config
-dev = "bot"  # ou mohus ou jahus ou bot
+__dev = "bot"  # ou mohus ou jahus ou bot
 __debug = False
 config = Helper.load_file_json("config.json")
 
@@ -400,32 +400,35 @@ def cmd_send_log(bot, update):
 	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
+def bot_set_handlers(dispatcher):
+	"""Register handlers for the Telegram commands"""
+	# on different commands - answer in Telegram
+	dispatcher.add_handler(CommandHandler("start", cmd_start, pass_args=True))
+	dispatcher.add_handler(CommandHandler("help", cmd_help))
+	dispatcher.add_handler(CommandHandler("about", cmd_about))
+	dispatcher.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
+	dispatcher.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
+	dispatcher.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
+	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
+	dispatcher.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
+	dispatcher.add_handler(InlineQueryHandler(inline_query))
+
+	# quand quelqu'un rejoint/quitte le chat
+	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
+	dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
+
+	# log all errors
+	dispatcher.add_error_handler(error)
+
+
 def main():
 	"""Start the bot."""
 	# Create the EventHandler and pass it your bot's token.
-	updater = Updater(config["token"][dev])
+	updater = Updater(config["token"][__dev])
 
 	# Get the dispatcher to register handlers
-	dp = updater.dispatcher
-
-	# on different commands - answer in Telegram
-	dp.add_handler(CommandHandler("start", cmd_start, pass_args=True))
-	dp.add_handler(CommandHandler("help", cmd_help))
-	dp.add_handler(CommandHandler("about", cmd_about))
-	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
-	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
-	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
-	#dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
-	dp.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
-	dp.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
-	dp.add_handler(InlineQueryHandler(inline_query))
-
-	# quand quelqu'un rejoint/quitte le chat
-	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
-	dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
-
-	# log all errors
-	dp.add_error_handler(error)
+	bot_set_handlers(updater.dispatcher)
 
 	# Start the Bot
 	updater.start_polling()

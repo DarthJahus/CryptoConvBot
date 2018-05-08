@@ -7,8 +7,9 @@ After=syslog.target
 After=network.target
 
 [Service]
-# Start main service
-ExecStart=/usr/bin/python /bots/CryptoConvBot/CryptoConvBot.py > /bots/CryptoConvBot/service.log 2>&1
+Type=simple
+ExecStart=/bots/CryptoConvBot/CryptoConvBot.py
+WorkingDirectory=/bots/CryptoConvBot/
 Restart=always
 RestartSec=600
 

@@ -22,7 +22,7 @@ __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.180320"
+__version__ = "3.1 (18/05/08)"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"

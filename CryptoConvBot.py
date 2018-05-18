@@ -17,7 +17,7 @@ import time
 
 
 # Config
-__dev = "test"  # "test" for tests, "bot" for production
+__dev = "bot"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
 

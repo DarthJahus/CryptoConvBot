@@ -1,4 +1,6 @@
-# coding=utf-8
+#!/usr/bin/python
+#coding=utf-8
+
 # CryptoConvBot 2
 
 import logging
@@ -6,7 +8,7 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler
 from Converter import convert, api_convert_coin
 from emoji import emojize
-import HelperFunctions as Helper
+import helperfunctions as Helper
 import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
@@ -15,12 +17,12 @@ import time
 
 
 # Config
-dev = "bot"  # ou mohus ou jahus ou bot
+__dev = "bot"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "2.180320"
+__version__ = "3.1 (18/05/08)"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
@@ -222,26 +224,36 @@ def cmd_snap(bot, update, args):
 			parse_mode="Markdown"
 		)
 	else:
-		# USD par défaut
+		# ETH by default, for @Seynon, USD is still retrieved
 		_unit_source = args[0].lower()
-		_unit_target = "usd"
+		_unit_target = "eth"
 		_results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
 		# Check the results
 		if _results["success"]:
-			# Emoji +/-
+			# Emoji +/- for change on 24h
 			if _results["result"]["change24"][0] == '-':
-				_change_sign = emojize(":small_red_triangle_down:", use_aliases=True)
+				_change_sign_24 = emojize(":small_red_triangle_down:", use_aliases=True)
 			else:
-				_change_sign = emojize(":small_red_triangle:", use_aliases=True)
+				_change_sign_24 = emojize(":small_red_triangle:", use_aliases=True)
+				_results["result"]["change24"] = "+" + _results["result"]["change24"]
+			# Emoji +/- for change on 7d
+			if _results["result"]["change7d"][0] == "-":
+				_change_sign_7 = emojize(":small_red_triangle_down:", use_aliases=True)
+			else:
+				_change_sign_7 = emojize(":small_red_triangle:", use_aliases=True)
+				_results["result"]["change7d"] = "+" + _results["result"]["change7d"]
 			# Answer
 			update.message.reply_text(
-				"*%s* (%s)\n\n*Price:* `%s USD | %s BTC`\n*Change 24h:* `%s%%` %s\n*Vol. 24h:* `%s USD`\n*MarketCap:* `%s USD`" \
+				"*%s* (%s)\n\n*Price:* `%s USD`\n`%s BTC | %s ETH`\n\n*Change 24 h:* `%s%%` %s\n*Change 7 d:* `%s%%` %s\n\n*Vol. 24 h:* `%s USD`\n*MarketCap:* `%s USD`" \
 				% (
 					args[0].upper(), _results["result"]["coin_name"],
 					_results["result"]["price_usd"],
 					_results["result"]["price_btc"],
+					_results["result"]["price_eth"],
 					_results["result"]["change24"],
-					_change_sign, # utils.helpers.escape_markdown(_change_sign),
+					_change_sign_24, # utils.helpers.escape_markdown(_change_sign),
+					_results["result"]["change7d"],
+					_change_sign_7,
 					_results["result"]["24volume_usd"],
 					_results["result"]["market_cap_usd"]
 				),
@@ -251,7 +263,6 @@ def cmd_snap(bot, update, args):
 		else:
 			_result = "*error__api_snap(%s)" % _unit_source
 			update.message.reply_text("*Error :(*\n%s" % _results["message"], parse_mode=ParseMode.MARKDOWN)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
 def cmd_easter_egg(bot, update):
@@ -400,45 +411,62 @@ def cmd_send_log(bot, update):
 	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
 
 
-def main():
-	"""Start the bot."""
-	# Create the EventHandler and pass it your bot's token.
-	updater = Updater(config["token"][dev])
-
-	# Get the dispatcher to register handlers
-	dp = updater.dispatcher
-
+def bot_set_handlers(dispatcher):
+	"""Register handlers for the Telegram commands"""
 	# on different commands - answer in Telegram
-	dp.add_handler(CommandHandler("start", cmd_start, pass_args=True))
-	dp.add_handler(CommandHandler("help", cmd_help))
-	dp.add_handler(CommandHandler("about", cmd_about))
-	dp.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
-	dp.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
-	dp.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
-	#dp.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
-	dp.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
-	dp.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
-	dp.add_handler(InlineQueryHandler(inline_query))
+	dispatcher.add_handler(CommandHandler("start", cmd_start, pass_args=True))
+	dispatcher.add_handler(CommandHandler("help", cmd_help))
+	dispatcher.add_handler(CommandHandler("about", cmd_about))
+	dispatcher.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
+	dispatcher.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
+	dispatcher.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
+	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
+	dispatcher.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
+	dispatcher.add_handler(InlineQueryHandler(inline_query))
 
 	# quand quelqu'un rejoint/quitte le chat
-	dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
-	dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
+	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
+	dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
 
 	# log all errors
-	dp.add_error_handler(error)
+	dispatcher.add_error_handler(error)
 
+
+def bot_init():
+	# Create the EventHandler and pass it your bot's token.
+	updater = Updater(config["token"][__dev])
+	# Get the dispatcher to register handlers
+	bot_set_handlers(updater.dispatcher)
 	# Start the Bot
-	updater.start_polling()
-
+	if config["webhook"]["enable"]:
+		updater.start_webhook(
+			listen="0.0.0.0",
+			port=config["webhook"]["port"],
+			url_path=config["token"][__dev],
+			key="server.key",
+			cert="server.pem",
+			webhook_url="%(url)s:%(port)s/" % (config["webhook"]) + config["token"][__dev]
+		)
+	else:
+		updater.start_polling()
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT. This should be used most of the time, since
 	# start_polling() is non-blocking and will stop the bot gracefully.
 	updater.idle()
 
+
+def main():
+	"""Start the bot."""
+	bot_init()
 	# Generate a coin list from CoinMarketCap
 	if not __debug: api_coinmarketcap.generate_cmc_coinlist()
 
 
 if __name__ == '__main__':
+	#try:
+	#	assert not config["webhook"]["enable"]
 	Helper.log("__main__", "", "", "")
 	main()
+	#except AssertionError:
+	#	print("Can't run the bot: Webhook is enabled.")

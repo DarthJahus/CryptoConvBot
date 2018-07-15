@@ -5,7 +5,7 @@
   },
   "webhook": {
 	"enable": true,
-	"url": "https://cconvbot.oldandwise.org",
+	"url": "https://foreman.subspace.club",
 	"port": 443
   },
   "greetings": {

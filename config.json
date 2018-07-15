@@ -4,7 +4,7 @@
 	"bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec"
   },
   "webhook": {
-	"enable": false,
+	"enable": true,
 	"url": "https://foreman.subspace.club",
 	"port": 443
   },

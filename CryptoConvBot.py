@@ -432,7 +432,7 @@ def main():
 	bot_set_handlers(updater.dispatcher)
 
 	# Start the Bot
-	updater.start_polling()
+	updater.start_polling(clean=True)
 
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT. This should be used most of the time, since

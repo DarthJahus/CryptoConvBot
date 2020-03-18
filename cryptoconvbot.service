@@ -1,17 +1,17 @@
-# Put this in /lib/systemd/system/cryptoconvbot.service
-# cp ./cryptoconvbot.service /lib/systemd/system/cryptoconvbot.service
+# Put this in /lib/systemd/system/CryptoConvBot.service
+# cp ./CryptoConvBot.service /lib/systemd/system/CryptoConvBot.service
 # Set mode 644
-# chmod 644 /lib/systemd/system/cryptoconvbot.service
+# chmod 644 /lib/systemd/system/CryptoConvBot.service
 # Set chmod +x to main script file
 # Don't forget #!/usr/bin/python
 # Add to systemctl
 # systemctl daemon-reload
-# systemctl enable cryptoconvbot.service
-# systemctl start cryptoconvbot.service
+# systemctl enable CryptoConvBot.service
+# systemctl start CryptoConvBot.service
 # To stop:
-# systemctl stop cryptoconvbot.service
+# systemctl stop CryptoConvBot.service
 # To remove
-# systemctl disable cryptoconvbot.service
+# systemctl disable CryptoConvBot.service
 
 [Unit]
 Description=CryptoConvBot

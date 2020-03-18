@@ -5,8 +5,8 @@
   },
   "webhook": {
 	"enable": false,
-	"url": "https://foreman.subspace.club",
-	"port": 443
+	"url": "",
+	"port": 444
   },
   "greetings": {
 	"-1": true

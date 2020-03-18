@@ -1,7 +1,5 @@
-#!/usr/bin/python
-#coding=utf-8
-
-# CryptoConvBot 2
+#!/usr/bin/python3
+# coding=utf-8
 
 import logging
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
@@ -449,7 +447,7 @@ def bot_init():
 			webhook_url="%(url)s:%(port)s/" % (config["webhook"]) + config["token"][__dev]
 		)
 	else:
-		updater.start_polling()
+		updater.start_polling(clean=True)
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT. This should be used most of the time, since
 	# start_polling() is non-blocking and will stop the bot gracefully.

@@ -4,9 +4,9 @@
 	"bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec"
   },
   "webhook": {
-	"enable": true,
-	"url": "https://cconvbot.oldandwise.org",
-	"port": 443
+	"enable": false,
+	"url": "",
+	"port": 444
   },
   "greetings": {
 	"-1": true

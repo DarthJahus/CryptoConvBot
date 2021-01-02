@@ -19,7 +19,7 @@ def save_file_json(file_name, args):
 		_file.close()
 
 
-def log(command, user_id, chat_id, result):
+def log_(command, user_id, chat_id, result):
 	"""
 	Log in a CSV file
 	Header is:
@@ -33,3 +33,12 @@ def log(command, user_id, chat_id, result):
 	with codecs.open("log.csv", 'a', "utf-8") as _file:
 		_file.write(_log)
 		if __debug: print("*log = " + _log)
+
+
+def log(command, update, result):
+	log_(
+		command,
+		"%s|@%s|%s|%s|%s" % (update.effective_user.id, update.effective_user.username, update.effective_user.first_name, update.effective_user.last_name, update.effective_user.language_code),
+		"%s|@%s|%s|%s" % (update.effective_chat.id, update.effective_chat.username, update.effective_chat.title, update.effective_chat.type),
+		result
+	)

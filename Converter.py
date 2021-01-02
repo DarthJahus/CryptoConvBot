@@ -6,6 +6,8 @@
 import requests
 import emoji
 import urllib3
+
+
 urllib3.disable_warnings()
 
 
@@ -85,16 +87,16 @@ def api_cryptocompare(coin_0, coin_1):
 
 def api_convert_coin(args, inline_call):
 	if len(args) > 3 or len(args) < 2:
-		return {"success": False, "result": None}
+		return {"success": False, "result": ""}
 	else:
-		value = 1.
+		_value = 1.
 		sources = []
 
 		# Calling API
 		if len(args) == 3:
 			try:
-				value = float(args[0])
-				print("** api_convert_coin(): value = %.8f" % value)
+				_value = float(args[0])
+				print("** api_convert_coin(): value = %.8f" % _value)
 			except:
 				print("** api_convert_coin(): Error while trying to get the value of args[0] (args[0] = %s)" % args[0])
 		try:
@@ -116,7 +118,7 @@ def api_convert_coin(args, inline_call):
 			if not source["success"]:
 				print("** api_convert_coin():\n\t%s" % source["error"])
 			else:
-				_price = float(source["result"]["last"]) * value
+				_price = float(source["result"]["last"]) * _value
 
 				if len(args) == 3:
 					_unit_source = args[1].upper()
@@ -125,26 +127,32 @@ def api_convert_coin(args, inline_call):
 					_unit_source = args[0].upper()
 					_unit_target = args[1].upper()
 				# Check if source unit and value can be simplified
-				if (_unit_source.lower() in units) and (value < 0.001):
+				if (_unit_source.lower() in units) and (_value < 0.00001):
 					_unit_source = "%s %s"\
 						% (
-							int(value * units[_unit_source.lower()]["multiplier"]),
+							int(_value * units[_unit_source.lower()]["multiplier"]),
 							units[_unit_source.lower()]["submultiple"]
 						)
 				else:
-					if value < 0.00001:
-						_unit_source = "%.8f %s" % (value, _unit_source)
+					if _value < 0.001:
+						_unit_source = "%.8f %s" % (_value, _unit_source)
 					else:
-						_unit_source = "%.4f %s" % (value, _unit_source)
-
-				if (_unit_target.lower() in units) and (_price < 0.0001):
+						if _value - int(_value) == 0:
+							_unit_source = "%i %s" % (int(_value), _unit_source)
+						else:
+							_unit_source = "%.4f %s" % (_value, _unit_source)
+						
+				if (_unit_target.lower() in units) and (_price < 0.00001):
 					_price = int(_price * units[_unit_target.lower()]["multiplier"])
 					_unit_target = units[_unit_target.lower()]["submultiple"]
 				else:
-					if value < 0.00001:
+					if _price < 0.001:
 						_price = "%.8f" % _price
 					else:
-						_price = "%.4f" % _price
+						if _price - int(_price) == 0:
+							_price = "%i" % int(_price)
+						else:
+							_price = "%.4f" % _price
 
 				# Answer message body
 				_results[source["exchange"]] = "%s %s\n`%s = %s %s`"\

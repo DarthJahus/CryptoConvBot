@@ -1,7 +1,8 @@
 {
   "token": {
 	"test": "573445478:AAHwmEYnb7eX4ej3T6AGTHJgbhqMv-nKeJs",
-	"bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec"
+  "bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec",
+  "mohus_test" : "1452700544:AAHVpc5rTNIoSKp-8j-oSI-3_bn6SOXKSb8"
   },
   "webhook": {
 	"enable": false,
@@ -15,5 +16,5 @@
 	67026917,
 	90930757
   ],
-  "bot_name": "CryptoConvBot"
+  "bot_name": "mohus_bot"
 }

@@ -12,19 +12,19 @@ import urllib3
 urllib3.disable_warnings()
 from datetime import datetime
 import time
+from random import choices
 
 
 # Config
-__dev = "bot"  # "test" for tests, "bot" for production
+__dev = "mohus_test"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
 
 # VARIABLES
-__version__ = "3.1 (18/05/08)"
+__version__ = "4.2 (2020-01-02)"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
-__DONATION_XVG = "DCY3HQXo8JtTGomK1673QgT4rkX8rdyZXA"
-__DONATION_PND = "PEwzKUUf1noKQaSkzKinPZ6irJBL1WckB4"
+__DONATION_XLM = "GDRG4SI4GT6YUIOVOBBCTQGZOUYVGRN534CQU4NX76KGPGQ7MS4ZM4EI"
 __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 
 # CONSTANTS
@@ -36,7 +36,7 @@ __help = {
 		"\n\n*%s Snapshot of a coin:*\n`/snap <coin>`\n::` /snap BCH`"
 		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
 		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
-		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @mohus."
+	    "\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
 		"\n\n%s Use /about to learn more about me and my creators."
 		% (
 			emojize(":key:", use_aliases=True),
@@ -48,28 +48,66 @@ __help = {
 			emojize(":information_source:", use_aliases=True)
 		)
 }
+
+
+__advertisements = {
+	"binance_20": {
+		"message": "Trade crypto on Binance",
+		"rate": 25,
+		"emoji": ":money_bag:",
+		"url": "https://www.binance.com/en/register?ref=13980323"
+	},
+	"binance_15": {
+		"message": "Trade crypto on Binance (get 5% on each transaction)",
+		"rate": 20,
+		"emoji": ":money_bag:",
+		"url" : "https://www.binance.com/en/register?ref=PG8I2A3F"
+	},
+	"ledger_nano_s": {
+		"message": "Secure your coins: Use Ledger Nano S.",
+		"rate": 20,
+		"emoji": ":credit_card:",
+		"url": "https://shop.ledger.com/products/ledger-nano-s?r=aaad&tracker=cryptoconvbot"
+	},
+	"ledger_nano_x": {
+		"rate": 5,
+		"emoji": ":credit_card:",
+		"message": "Hold your crypto securly. Use Ledger Nano X.",
+		"url": "https://shop.ledger.com/pages/ledger-nano-x?r=aaad&tracker=cryptoconvbot"
+	},
+	"about": {
+		"rate": 10,
+		"emoji": ":coffee:",
+		"message": "Buy me a coffee!",
+		"url": "https://telegram.me/%s?start=about"
+	},
+	"nothing": {
+		"rate": 20,
+		"message": None
+	}
+}
+
 __ABOUT_TEXT = (
-		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @mohus, %s @foudre."
+		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @[censured]."
 		"\n\n%s Send /help to see how it works."
 		"\n\n%s *Donations*"
 		"\n- *ETH/ETC:* `%s`"
-		"\n- *XVG:* `%s`"
-		"\n- *PND:* `%s`"
+		"\n- *XLM:* `%s`"
 		"\n- *BCH/BTC:* `%s`"
 		"\nThank you!"
 		"\n\n%s *Credits*"
 		"\n- API from [CryptoCoinMarket](https://coinmarketcap.com)"
 		"\n- API from [Cryptonator](https://www.cryptonator.com)"
 	) % (
-		__version__, emojize(':robot_face:'), emojize(':alien_monster:'), emojize(':alien:'),
+		__version__, emojize(':robot_face:'), emojize(':alien_monster:'),
 		emojize(":key:", use_aliases=True),
 		emojize(':beers:', use_aliases=True),
 		__DONATION_ETH,
-		__DONATION_XVG,
-		__DONATION_PND,
+		__DONATION_XLM,
 		__DONATION_BTC,
 		emojize(":linked_paperclips:", use_aliases=True)
 	)
+
 __thumb_url = {
 	"Cryptonator": {
 		"url": "https://i.imgur.com/4Shr41n.png",
@@ -91,13 +129,22 @@ __thumb_url = {
 # Enable logging
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-	level=logging.CRITICAL
+	level=logging.ERROR #CRITICAL
 )
 logger = logging.getLogger(__name__)
 
 
-# Define a dew command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
+def get_advertisement():
+	_messages = []
+	_rates = []
+	for _item in __advertisements:
+		if __advertisements[_item]["message"] is None:
+			_messages.append("")
+		else:
+			_messages.append("\n\n%s [%s](%s)" % (emojize(__advertisements[_item]["emoji"], use_aliases=True), __advertisements[_item]["message"], __advertisements[_item]["url"]))
+		_rates.append(__advertisements[_item]["rate"])
+	print(sum(_rates))
+	return choices(_messages, _rates)[0]
 
 
 def cmd_about(bot, update):
@@ -121,30 +168,30 @@ def cmd_about(bot, update):
 			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True,
 		)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
 def cmd_convert(bot, update, args):
 	_cmd_name = "cmd_convert"
 	if len(args) in [2, 3]:
 		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
-		_message = convert(args)
+		_message = convert(args) + get_advertisement()
 	elif len(args) == 0:
 		_result = None
 		_message = None
 	else:
 		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
-		_message = "Error: Invalid query:\n%s" % args
+		_message = "Invalid query.\n[See help](https://t.me/cryptoconvbot?start=help)"
 	if _result is not None:
-		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
-		Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True, disable_web_page_preview=True)
+		Helper.log(_cmd_name, update, _result)
 
 
 def cmd_ticker(bot, update, args):
-	_cmd_name = "cmd_convert"
+	_cmd_name = "cmd_ticker"
 	if len(args) == 1:
 		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
-		_message = convert([args[0], "btc"])
+		_message = convert([args[0], "btc"]) + get_advertisement()
 	elif len(args) == 0:
 		_result = None
 		_message = None
@@ -152,8 +199,24 @@ def cmd_ticker(bot, update, args):
 		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
 		_message = "Error: Invalid query:\n%s" % args
 	if _result is not None:
-		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True)
-		Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True, disable_web_page_preview=True)
+		Helper.log(_cmd_name, update, _result)
+
+
+def cmd_price(bot, update, args):
+	_cmd_name = "cmd_price"
+	if len(args) == 1:
+		_result = "[%s]" % ', '.join(args).replace('\n', '\\n')
+		_message = convert([args[0], "usd"]) + get_advertisement()
+	elif len(args) == 0:
+		_result = None
+		_message = None
+	else:
+		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
+		_message = "Error: Invalid query:\n%s" % args
+	if _result is not None:
+		update.message.reply_text(_message, parse_mode=ParseMode.MARKDOWN, quote=True, disable_web_page_preview=True)
+		Helper.log(_cmd_name, update, _result)
 
 
 def inline_query(bot, update):
@@ -207,7 +270,7 @@ def inline_query(bot, update):
 			_res_id+=1
 		_result = "[%s]" % ', '.join(query.split()).replace('\n', '\\n')
 	update.inline_query.answer(results)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, "", _result)
+	if _result is not None: Helper.log_(_cmd_name, update.effective_user.id, "{inline}", _result)
 
 
 def cmd_snap(bot, update, args):
@@ -283,7 +346,7 @@ def cmd_help(bot, update):
 			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True,
 		)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
 def event_group_join(bot, update):
@@ -357,7 +420,7 @@ def cmd_greetings(bot, update, args):
 		save_config()
 		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
 		_result = "*greetings %s > %s" % (str(not _activate), str(_activate))
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
 def error(bot, update, error):
@@ -385,7 +448,7 @@ def cmd_start(bot, update, args):
 		else:
 			_result = "*msg__start"
 			update.message.reply_text('Hi !\nUse /help to see how I can help you.')
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
 def cmd_send_log(bot, update):
@@ -406,7 +469,7 @@ def cmd_send_log(bot, update):
 				caption="Here you are!",
 				filename=_file_name
 			)
-	if _result is not None: Helper.log(_cmd_name, update.effective_user.id, update.effective_chat.id, _result)
+	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
 def bot_set_handlers(dispatcher):
@@ -416,16 +479,17 @@ def bot_set_handlers(dispatcher):
 	dispatcher.add_handler(CommandHandler("help", cmd_help))
 	dispatcher.add_handler(CommandHandler("about", cmd_about))
 	dispatcher.add_handler(CommandHandler("convert", cmd_convert, pass_args=True))
-	dispatcher.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
+	dispatcher.add_handler(CommandHandler("price", cmd_price, pass_args=True))
+	#dispatcher.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
 	dispatcher.add_handler(CommandHandler("ticker", cmd_ticker, pass_args=True))
-	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
-	dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
+	dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	#dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
 	dispatcher.add_handler(CommandHandler("get_log", cmd_send_log, pass_args=False))
 	dispatcher.add_handler(InlineQueryHandler(inline_query))
 
 	# quand quelqu'un rejoint/quitte le chat
-	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
-	dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
+	#dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
+	#dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
 
 	# log all errors
 	dispatcher.add_error_handler(error)
@@ -464,7 +528,7 @@ def main():
 if __name__ == '__main__':
 	#try:
 	#	assert not config["webhook"]["enable"]
-	Helper.log("__main__", "", "", "")
+	Helper.log_("main", "", "", "")
 	main()
 	#except AssertionError:
 	#	print("Can't run the bot: Webhook is enabled.")

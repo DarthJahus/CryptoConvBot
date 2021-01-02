@@ -16,7 +16,7 @@ from random import choices
 
 
 # Config
-__dev = "mohus_test"  # "test" for tests, "bot" for production
+__dev = "bot"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
 
@@ -36,7 +36,7 @@ __help = {
 		"\n\n*%s Snapshot of a coin:*\n`/snap <coin>`\n::` /snap BCH`"
 		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
 		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
-	    "\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
+		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
 		"\n\n%s Use /about to learn more about me and my creators."
 		% (
 			emojize(":key:", use_aliases=True),
@@ -55,31 +55,31 @@ __advertisements = {
 		"message": "Trade crypto on Binance",
 		"rate": 25,
 		"emoji": ":money_bag:",
-		"url": "https://www.binance.com/en/register?ref=13980323"
+		"url": "https://bit.ly/BinanceMohus"
 	},
 	"binance_15": {
 		"message": "Trade crypto on Binance (get 5% on each transaction)",
 		"rate": 20,
 		"emoji": ":money_bag:",
-		"url" : "https://www.binance.com/en/register?ref=PG8I2A3F"
+		"url" : "https://bit.ly/BinanceMohus15"
 	},
 	"ledger_nano_s": {
 		"message": "Secure your coins: Use Ledger Nano S.",
 		"rate": 20,
 		"emoji": ":credit_card:",
-		"url": "https://shop.ledger.com/products/ledger-nano-s?r=aaad&tracker=cryptoconvbot"
+		"url": "https://bit.ly/LedgerNanoSJahus"
 	},
 	"ledger_nano_x": {
 		"rate": 5,
 		"emoji": ":credit_card:",
 		"message": "Hold your crypto securly. Use Ledger Nano X.",
-		"url": "https://shop.ledger.com/pages/ledger-nano-x?r=aaad&tracker=cryptoconvbot"
+		"url": "https://bit.ly/LedgerNanoXJahus"
 	},
 	"about": {
 		"rate": 10,
 		"emoji": ":coffee:",
 		"message": "Buy me a coffee!",
-		"url": "https://telegram.me/%s?start=about"
+		"url": "https://telegram.me/%s?start=about" % __bot_name
 	},
 	"nothing": {
 		"rate": 20,
@@ -88,7 +88,7 @@ __advertisements = {
 }
 
 __ABOUT_TEXT = (
-		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @[censured]."
+		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @Mohus."
 		"\n\n%s Send /help to see how it works."
 		"\n\n%s *Donations*"
 		"\n- *ETH/ETC:* `%s`"
@@ -101,7 +101,7 @@ __ABOUT_TEXT = (
 	) % (
 		__version__, emojize(':robot_face:'), emojize(':alien_monster:'),
 		emojize(":key:", use_aliases=True),
-		emojize(':beers:', use_aliases=True),
+		emojize(':coffee:', use_aliases=True),
 		__DONATION_ETH,
 		__DONATION_XLM,
 		__DONATION_BTC,
@@ -143,7 +143,6 @@ def get_advertisement():
 		else:
 			_messages.append("\n\n%s [%s](%s)" % (emojize(__advertisements[_item]["emoji"], use_aliases=True), __advertisements[_item]["message"], __advertisements[_item]["url"]))
 		_rates.append(__advertisements[_item]["rate"])
-	print(sum(_rates))
 	return choices(_messages, _rates)[0]
 
 

@@ -46,7 +46,6 @@ def get_nomics_prices():
             tokens_prices["last_timestamp"] = time.time()
 
     except Exception as e:
-        print(e.args)
         return {"success": False, "message": "Error from api_nomics_ticker()"}
 
 def format_price(price):

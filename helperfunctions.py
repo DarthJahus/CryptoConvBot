@@ -14,8 +14,8 @@ def load_file_json(file_name):
 
 
 def save_file_json(file_name, args):
-	with open(file_name, 'w') as _file:
-		json.dump(args, _file, ensure_ascii=False, encoding="utf-8")
+	with open(file_name, 'w', encoding="utf-8") as _file:
+		json.dump(args, _file, ensure_ascii=False)
 		_file.close()
 
 

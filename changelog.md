@@ -1,5 +1,18 @@
 # Changelog
 
+#### version 4.4 (28/02)
+* /snap Removed ! (for EVER!!)
+* added /price (to replace /snap) based on Nomics API
+* Nomics API Cache (call every 1 minute)
+* /price still alpha, no exception handling
+* message to try /price in /snap
+
+#### version 4.2-3 (01/20)
+* Fixed /snap command & minor enhancements
+* Upgraded to Python-Telegram-Bot 13.1
+* Moved all consts to *constants.py*
+
+
 #### version 3.1 (18/05/08)
 
 * Add WebHook support

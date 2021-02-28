@@ -3,129 +3,27 @@
 
 import logging
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
-from telegram.ext import Updater, CommandHandler, InlineQueryHandler, Filters, MessageHandler, CallbackContext
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler, CallbackContext
 from telegram.update import Update
-from Converter import convert, api_convert_coin
 from emoji import emojize
-import helperfunctions as Helper
-import api_coinmarketcap
 import urllib3
 urllib3.disable_warnings()
 from datetime import datetime
 import time
 from random import choices
 
+# modularity [internal bot modules]
+import constants as consts
+from Converter import convert, api_convert_coin
+import helperfunctions as Helper
+
+import api_nomics
+import api_coinmarketcap
 
 # Config
 __dev = "mohus_test"  # "test" for tests, "bot" for production
 __debug = False
 config = Helper.load_file_json("config.json")
-
-# VARIABLES
-__version__ = "4.3 (2020-01-28)"
-__bot_name = "CryptoConvBot"
-__DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
-__DONATION_XLM = "GDRG4SI4GT6YUIOVOBBCTQGZOUYVGRN534CQU4NX76KGPGQ7MS4ZM4EI"
-__DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
-
-# CONSTANTS
-__help = {
-	"en":
-		"*HELP* %s\n\n"
-		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
-		"\n\n*%s Ticker:*\n`/ticker <coin>`\n::` /ticker PND`"
-		"\n\n*%s Snapshot of a coin:*\n`/snap <coin>`\n::` /snap BCH`"
-		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
-		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
-		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
-		"\n\n%s Use /about to learn more about me and my creators."
-		% (
-			emojize(":key:", use_aliases=True),
-			emojize(":arrows_counterclockwise:", use_aliases=True),
-			emojize(":eyes:", use_aliases=True),
-			emojize(":chart_with_upwards_trend:", use_aliases=True),
-			emojize(":arrow_right_hook:", use_aliases=True),
-			emojize(":nerd_face:", use_aliases=True),
-			emojize(":information_source:", use_aliases=True)
-		)
-}
-
-
-__advertisements = {
-	"binance_20": {
-		"message": "Trade crypto on Binance",
-		"rate": 25,
-		"emoji": ":money_bag:",
-		"url": "https://bit.ly/BinanceMohus"
-	},
-	"binance_15": {
-		"message": "Trade crypto on Binance (get 5% on each transaction)",
-		"rate": 20,
-		"emoji": ":money_bag:",
-		"url" : "https://bit.ly/BinanceMohus15"
-	},
-	"ledger_nano_s": {
-		"message": "Secure your coins: Use Ledger Nano S.",
-		"rate": 20,
-		"emoji": ":credit_card:",
-		"url": "https://bit.ly/LedgerNanoSJahus"
-	},
-	"ledger_nano_x": {
-		"rate": 5,
-		"emoji": ":credit_card:",
-		"message": "Hold your crypto securly. Use Ledger Nano X.",
-		"url": "https://bit.ly/LedgerNanoXJahus"
-	},
-	"about": {
-		"rate": 10,
-		"emoji": ":coffee:",
-		"message": "Buy me a coffee!",
-		"url": "https://telegram.me/%s?start=about" % __bot_name
-	},
-	"nothing": {
-		"rate": 20,
-		"message": None
-	}
-}
-
-__ABOUT_TEXT = (
-		"*CryptoConBot ver. %s*\nBy %s @Jahus, %s @Mohus."
-		"\n\n%s Send /help to see how it works."
-		"\n\n%s *Donations*"
-		"\n- *ETH/ETC:* `%s`"
-		"\n- *XLM:* `%s`"
-		"\n- *BCH/BTC:* `%s`"
-		"\nThank you!"
-		"\n\n%s *Credits*"
-		"\n- API from [CryptoCoinMarket](https://coinmarketcap.com)"
-		"\n- API from [Cryptonator](https://www.cryptonator.com)"
-	) % (
-		__version__, emojize(':robot_face:'), emojize(':alien_monster:'),
-		emojize(":key:", use_aliases=True),
-		emojize(':coffee:', use_aliases=True),
-		__DONATION_ETH,
-		__DONATION_XLM,
-		__DONATION_BTC,
-		emojize(":linked_paperclips:", use_aliases=True)
-	)
-
-__thumb_url = {
-	"Cryptonator": {
-		"url": "https://i.imgur.com/4Shr41n.png",
-		"width": 64,
-		"height": 64
-	},
-	"CryptoCompare": {
-		"url": "https://i.imgur.com/FWEOyTT.png",
-		"width": 64,
-		"height": 64
-	},
-	"error": {
-		"url": "https://i.imgur.com/AWeJubR.png",
-		"width": 64,
-		"height": 64
-	}
-}
 
 # Enable logging
 logging.basicConfig(
@@ -138,12 +36,12 @@ logger = logging.getLogger(__name__)
 def get_advertisement():
 	_messages = []
 	_rates = []
-	for _item in __advertisements:
-		if __advertisements[_item]["message"] is None:
+	for _item in consts.__advertisements:
+		if  consts.__advertisements[_item]["message"] is None:
 			_messages.append("")
 		else:
-			_messages.append("\n\n%s [%s](%s)" % (emojize(__advertisements[_item]["emoji"], use_aliases=True), __advertisements[_item]["message"], __advertisements[_item]["url"]))
-		_rates.append(__advertisements[_item]["rate"])
+			_messages.append("\n\n%s [%s](%s)" % (emojize( consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
+		_rates.append( consts.__advertisements[_item]["rate"])
 	return choices(_messages, _rates)[0]
 
 
@@ -155,7 +53,7 @@ def cmd_about(update : Update, context : CallbackContext):
 		_result = "*msg__about"
 		context.bot.send_message(
 			update.effective_chat.id, 
-			__ABOUT_TEXT,  
+			consts.__ABOUT_TEXT,  
 			parse_mode=ParseMode.MARKDOWN, 
 			reply_to_message_id=update.message.message_id, 
 			disable_web_page_preview=True)
@@ -163,7 +61,7 @@ def cmd_about(update : Update, context : CallbackContext):
 		_result = "error__private_command_in_public"
 		context.bot.send_message(
 			update.effective_chat.id, 
-			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)." % (emojize(":nerd_face:"), __bot_name),  
+			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=about)." % (emojize(":nerd_face:"),  consts.__bot_name),  
 			parse_mode=ParseMode.MARKDOWN, 
 			reply_to_message_id=update.message.message_id, 
 			disable_web_page_preview=True)
@@ -180,7 +78,7 @@ def cmd_convert(update : Update, context : CallbackContext):
 		_result = None
 		_message = None
 	else:
-		_result = "*error__invalid_query [%s]" % ", ".join(args).replace("\n", "\\n")
+		_result = "*error__invalid_query [%s]" % ", ".join(context.args).replace("\n", "\\n")
 		_message = "Invalid query.\n[See help](https://t.me/cryptoconvbot?start=help)"
 	if _result is not None:
 		context.bot.send_message(update.effective_chat.id, _message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=update.message.message_id, disable_web_page_preview=True)
@@ -191,7 +89,7 @@ def cmd_ticker(update : Update, context : CallbackContext):
 	_cmd_name = "cmd_ticker"
 	if len(context.args) == 1:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert([context.args[0], "btc"]) + get_advertisement()
+		_message = convert([context.args[0], "btc"]) + "\n\n **Try the new /price command !**" + get_advertisement()
 	elif len(context.args) == 0:
 		_result = None
 		_message = None
@@ -202,21 +100,6 @@ def cmd_ticker(update : Update, context : CallbackContext):
 		context.bot.send_message(update.effective_chat.id, _message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=update.message.message_id, disable_web_page_preview=True)
 		Helper.log(_cmd_name, update, _result)
 
-
-def cmd_price(update : Update, context : CallbackContext):
-	_cmd_name = "cmd_price"
-	if len(context.args) == 1:
-		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert([context.args[0], "usd"]) + get_advertisement()
-	elif len(context.args) == 0:
-		_result = None
-		_message = None
-	else:
-		_result = "*error__invalid_query [%s]" % ", ".join(context.args).replace("\n", "\\n")
-		_message = "Error: Invalid query:\n%s" % context.args
-	if _result is not None:
-		context.bot.send_message(update.effective_chat.id, _message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=update.message.message_id, disable_web_page_preview=True)
-		Helper.log(_cmd_name, update, _result)
 
 
 def inline_query(update : Update, context : CallbackContext):
@@ -245,9 +128,9 @@ def inline_query(update : Update, context : CallbackContext):
 					parse_mode=ParseMode.MARKDOWN
 				),
 				description="Failed to convert. Sorry.\n%s" % convertion_results["result"],
-				thumb_url=__thumb_url["error"]["url"],
-				thumb_height=__thumb_url["error"]["height"],
-				thumb_width=__thumb_url["error"]["width"]
+				thumb_url= consts.__thumb_url["error"]["url"],
+				thumb_height= consts.__thumb_url["error"]["height"],
+				thumb_width= consts.__thumb_url["error"]["width"]
 				)
 			)
 	else:
@@ -262,9 +145,9 @@ def inline_query(update : Update, context : CallbackContext):
 						parse_mode=ParseMode.MARKDOWN
 					),
 					description=convertion_results['result_inline'][service],
-					thumb_url=__thumb_url[service]["url"],
-					thumb_width=__thumb_url[service]["width"],
-					thumb_height=__thumb_url[service]["height"]
+					thumb_url= consts.__thumb_url[service]["url"],
+					thumb_width= consts.__thumb_url[service]["width"],
+					thumb_height= consts.__thumb_url[service]["height"]
 				)
 			)
 			_res_id+=1
@@ -273,61 +156,14 @@ def inline_query(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log_(_cmd_name, update.effective_user.id, "{inline}", _result)
 
 
-def cmd_snap(update : Update, context : CallbackContext):
-	_cmd_name = "cmd_snap"
-	_result = None
-	if len(context.args) > 1:
-		# too many arguments
-		_result = "*error__too_many_args"
-		update.message.reply_text(
-			"*Error :(*\n"
-			"*Usage :* `/snap <coin0>`\n",
-			parse_mode="Markdown"
-		)
-	else:
-		# ETH by default, for @Seynon, USD is still retrieved
-		_unit_source = context.args[0].lower()
-		_unit_target = "eth"
-		_results = api_coinmarketcap.get_snap(_unit_source, _unit_target)
-		# Check the results
-		if _results["success"]:
-			# Emoji +/- for change on 24h
-			if _results["result"]["change24"][0] == '-':
-				_change_sign_24 = emojize(":small_red_triangle_down:", use_aliases=True)
-			else:
-				_change_sign_24 = emojize(":small_red_triangle:", use_aliases=True)
-				_results["result"]["change24"] = "+" + _results["result"]["change24"]
-			# Emoji +/- for change on 7d
-			if _results["result"]["change7d"][0] == "-":
-				_change_sign_7 = emojize(":small_red_triangle_down:", use_aliases=True)
-			else:
-				_change_sign_7 = emojize(":small_red_triangle:", use_aliases=True)
-				_results["result"]["change7d"] = "+" + _results["result"]["change7d"]
-			# Answer
-			update.message.reply_text(
-				"*%s* (%s)\n\n*Price:* `%s USD`\n`%s BTC | %s ETH`\n\n*Change 24 h:* `%s%%` %s\n*Change 7 d:* `%s%%` %s\n\n*Vol. 24 h:* `%s USD`\n*MarketCap:* `%s USD`" \
-				% (
-					args[0].upper(), _results["result"]["coin_name"],
-					_results["result"]["price_usd"],
-					_results["result"]["price_btc"],
-					_results["result"]["price_eth"],
-					_results["result"]["change24"],
-					_change_sign_24, # utils.helpers.escape_markdown(_change_sign),
-					_results["result"]["change7d"],
-					_change_sign_7,
-					_results["result"]["24volume_usd"],
-					_results["result"]["market_cap_usd"]
-				),
-				parse_mode=ParseMode.MARKDOWN
-			)
-			_result = _unit_source
-		else:
-			_result = "*error__api_snap(%s)" % _unit_source
-			update.message.reply_text("*Error :(*\n%s" % _results["message"], parse_mode=ParseMode.MARKDOWN)
+def cmd_price(update : Update, context : CallbackContext):
+	_coin = context.args[0]
+	_message = api_nomics.get_coin_price(_coin) + get_advertisement()
 
-
-def cmd_easter_egg(update : Update):
-	update.message.reply_photo("https://i.imgur.com/gzjl0yD.jpg")
+	context.bot.send_message(	update.effective_chat.id, 
+								_message, parse_mode=ParseMode.MARKDOWN, 
+								reply_to_message_id=update.message.message_id, 
+								disable_web_page_preview=True)
 
 
 def cmd_help(update : Update, context : CallbackContext):
@@ -336,12 +172,12 @@ def cmd_help(update : Update, context : CallbackContext):
 	_result = None
 	if update.effective_chat.type == "private":
 		_result = "*msg__help"
-		update.message.reply_text(__help["en"], parse_mode=ParseMode.MARKDOWN, quote=True)
+		update.message.reply_text(consts.__help["en"], parse_mode=ParseMode.MARKDOWN, quote=True)
 	else:
 		_result = "*error__private_command_in_public"
 		update.message.reply_text(
 			"You can't ask this in public ! %s\nPlease [click here](https://telegram.me/%s?start=help)."
-			% (emojize(":nerd_face:"), __bot_name),
+			% (emojize(":nerd_face:"),  consts.__bot_name),
 			quote=True,
 			parse_mode=ParseMode.MARKDOWN,
 			disable_web_page_preview=True,
@@ -481,12 +317,16 @@ def bot_set_handlers(dispatcher):
 	dispatcher.add_handler(CommandHandler("about", cmd_about))
 	dispatcher.add_handler(CommandHandler("convert", cmd_convert))
 	dispatcher.add_handler(CommandHandler("price", cmd_price))
-	#dispatcher.add_handler(CommandHandler("snap", cmd_snap, pass_args=True))
 	dispatcher.add_handler(CommandHandler("ticker", cmd_ticker))
-	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
-	#dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
 	dispatcher.add_handler(CommandHandler("get_log", cmd_send_log))
 	dispatcher.add_handler(InlineQueryHandler(inline_query))
+
+
+	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
+	#dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
+		#dispatcher.add_handler(CommandHandler("price", cmd_price))		
+	#dispatcher.add_handler(CommandHandler("snap", cmd_snap)) BYEEEEEEE
+
 
 	# quand quelqu'un rejoint/quitte le chat
 	#dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
@@ -523,7 +363,7 @@ def main():
 	"""Start the bot."""
 	bot_init()
 	# Generate a coin list from CoinMarketCap
-	if not __debug: api_coinmarketcap.generate_cmc_coinlist()
+	#if not __debug: api_coinmarketcap.generate_cmc_coinlist()
 
 
 if __name__ == '__main__':

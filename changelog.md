@@ -1,11 +1,13 @@
 # Changelog
 
+#### version 4.5 (29/02)
+* /price final & manager exceptions
 #### version 4.4 (28/02)
 * /snap Removed ! (for EVER!!)
 * added /price (to replace /snap) based on Nomics API
 * Nomics API Cache (call every 1 minute)
 * /price still alpha, no exception handling
-* message to try /price in /snap
+* message/info/alert to try /price in /snap
 
 #### version 4.2-3 (01/20)
 * Fixed /snap command & minor enhancements

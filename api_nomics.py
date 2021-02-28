@@ -30,9 +30,9 @@ def get_nomics_prices():
 
             tk_name         = item["id"]
             tk_price        = (item["price"])
-            tk_1hprice      = str(float(item["1h"]["price_change_pct"])  * 100)
-            tk_1dprice      = str(float(item["1d"]["price_change_pct"])  * 100)
-            tk_7dprice      = str(float(item["7d"]["price_change_pct"])  * 100)
+            tk_1hprice      = "%.2f" % (float(item["1h"]["price_change_pct"])  * 100) # tout en str pour pas se faire chier
+            tk_1dprice      = "%.2f" % (float(item["1d"]["price_change_pct"])  * 100) # après avec des %f des %s et autres
+            tk_7dprice      = "%.2f" % (float(item["7d"]["price_change_pct"])  * 100) # sinon, changer put_sign(), et get_coin_price()
             tk_marketcap    = float(item["market_cap"])
                 
             tokens_prices[tk_name] =  {
@@ -61,6 +61,15 @@ def format_price(price):
 def format_thousands(price):
     return f"{price:,}"
 
+def put_sign(price):
+    price_trend = ["\U0001F539", "\U0001F53B"] # up - down 	
+    # number length 7 : +000.00  
+    if price[0]=="-":
+        n_spaces = (7 - len(price))*(" ")
+        return price + n_spaces + price_trend[1] # down
+    else:
+        n_spaces = (6 - len(price))*(" ")
+        return "+" + price+ n_spaces + price_trend[0] # up
 
 def get_coin_price(coin):
     if "last_timestamp" in tokens_prices:
@@ -73,11 +82,11 @@ def get_coin_price(coin):
     
     coin = coin.upper()
 
-    _message = "**%s - USD**\n**Price** : `%s`\n**1H Price change** : `%s`\n**1D Price change** : `%s`\n**7D Price change** : `%s`\n**Market cap.** : `%s` USD" % (
+    _message = "*>> %s - USD*\n*Price* : `%s` USD.\n*1H Price change* : `%s`\n*1D Price change* : `%s`\n*7D Price change* : `%s`\n*Market cap.* : `%s` USD." % (
         coin, format_price(tokens_prices[coin]["price"]), 
-        tokens_prices[coin]["1h-price-ch"], 
-        tokens_prices[coin]["1d-price-ch"], 
-        tokens_prices[coin]["7d-price-ch"], 
+        put_sign(tokens_prices[coin]["1h-price-ch"]), 
+        put_sign(tokens_prices[coin]["1d-price-ch"]), 
+        put_sign(tokens_prices[coin]["7d-price-ch"]), 
         format_thousands(tokens_prices[coin]["market-cap"])
     )
 

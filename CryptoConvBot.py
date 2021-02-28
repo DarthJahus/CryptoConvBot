@@ -18,7 +18,6 @@ from Converter import convert, api_convert_coin
 import helperfunctions as Helper
 
 import api_nomics
-import api_coinmarketcap
 
 # Config
 __dev = "mohus_test"  # "test" for tests, "bot" for production
@@ -40,7 +39,7 @@ def get_advertisement():
 		if  consts.__advertisements[_item]["message"] is None:
 			_messages.append("")
 		else:
-			_messages.append("\n\n%s [%s](%s)" % (emojize( consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
+			_messages.append("\n\n \[Ad] %s [%s](%s)" % (emojize( consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
 		_rates.append( consts.__advertisements[_item]["rate"])
 	return choices(_messages, _rates)[0]
 
@@ -157,13 +156,17 @@ def inline_query(update : Update, context : CallbackContext):
 
 
 def cmd_price(update : Update, context : CallbackContext):
-	_coin = context.args[0]
-	_message = api_nomics.get_coin_price(_coin) + get_advertisement()
+	_cmd_name = "cmd_price"
+	if len(context.args) == 1:
+		_coin = context.args[0]
+		_message = api_nomics.get_coin_price(_coin) + get_advertisement()
 
-	context.bot.send_message(	update.effective_chat.id, 
-								_message, parse_mode=ParseMode.MARKDOWN, 
-								reply_to_message_id=update.message.message_id, 
-								disable_web_page_preview=True)
+		context.bot.send_message(	update.effective_chat.id, 
+									_message, parse_mode=ParseMode.MARKDOWN, 
+									reply_to_message_id=update.message.message_id, 
+									disable_web_page_preview=True)
+
+		Helper.log(_cmd_name, update, _message)							
 
 
 def cmd_help(update : Update, context : CallbackContext):

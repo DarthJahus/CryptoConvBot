@@ -2,7 +2,7 @@ from emoji import emojize
 
 
 # VARIABLES
-__version__ = "4.3 (2020-01-28)"
+__version__ = "4.5 (2020-02-28)"
 __bot_name = "CryptoConvBot"
 __DONATION_ETH = "0x624688e4012c9E6Be7239BeA0A575F8e41B4B3B6"
 __DONATION_XLM = "GDRG4SI4GT6YUIOVOBBCTQGZOUYVGRN534CQU4NX76KGPGQ7MS4ZM4EI"
@@ -13,7 +13,7 @@ __help = {
 	"en":
 		"*HELP* %s\n\n"
 		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
-		"\n\n*%s Ticker:*\n`/ticker <coin>`\n::` /ticker DOT`"
+		"\n\n*%s Price:*\n`/price <coin>`\n::` /price DOT`"
 		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
 		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
 		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
@@ -37,7 +37,7 @@ __advertisements = {
 		"url": "https://bit.ly/BinanceMohus"
 	},
 	"binance_15": {
-		"message": "Trade crypto on Binance (get 5% on each transaction)",
+		"message": "Trade crypto on Binance (-10% transcation fee)",
 		"rate": 20,
 		"emoji": ":money_bag:",
 		"url" : "https://bit.ly/BinanceMohus15"

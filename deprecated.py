@@ -77,3 +77,77 @@ def cmd_easter_egg(update : Update):
 	if _result is not None:
 		context.bot.send_message(update.effective_chat.id, _message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=update.message.message_id, disable_web_page_preview=True)
 		Helper.log(_cmd_name, update, _result) """
+
+
+def event_group_join(update: Update):
+	"""Reply when a member joins the group."""
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if len(update.message.new_chat_members) == 1 and update.message.new_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.new_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text(
+				"Hello, %s." % ', '.join([user.first_name for user in update.message.new_chat_members]),
+				quote=True
+			)
+
+
+def event_group_leave(update: Update):
+	"""Reply when a member leaves the group."""
+	_greetings = True # Default behavior
+	if str(update.effective_chat.id) in config["greetings"]:
+		_greetings = config["greetings"][str(update.effective_chat.id)]
+	if _greetings:
+		if update.message.left_chat_member.is_bot:
+			update.message.reply_text(
+				"`0x4279652C20%s21`" % update.message.left_chat_member.username.encode("hex").upper(),
+				parse_mode=ParseMode.MARKDOWN,
+				quote=True
+			)
+		else:
+			update.message.reply_text("Bye, %s." % update.message.left_chat_member.first_name, quote=True)
+
+
+def save_config():
+	Helper.save_file_json("config.json", config)
+
+
+def cmd_greetings(update: Update, context: CallbackContext):
+	"""Disable greetings """
+	_cmd_name = "cmd_greetings"
+	_result = None
+	if context.args[0].lower() == "on":
+		_activate = True
+	elif context.args[0].lower() == "off":
+		_activate = False
+	else:
+		_activate = None
+	_check_admins = False
+	_do = False
+	if update.effective_chat.type in ["group", "supergroup"] and _activate is not None:
+		if str(update.effective_chat.id) in config["greetings"]:
+			if config["greetings"][str(update.effective_chat.id)] is not _activate:
+				_check_admins = True
+		else:
+			_check_admins = True
+	if _check_admins:
+		if update.effective_chat.all_members_are_administrators:
+			_do = True
+			print("dew it")
+		else:
+			_admins = update.effective_chat.get_administrators() # Type: telegram.ChatMember
+			if update.effective_user.id in [admin.user.id for admin in _admins]:
+				_do = True
+				print("dew it")
+	if _do:
+		config["greetings"][str(update.effective_chat.id)] = _activate
+		save_config()
+		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
+		_result = "*greetings %s > %s" % (str(not _activate), str(_activate))
+	if _result is not None: Helper.log(_cmd_name, update, _result)

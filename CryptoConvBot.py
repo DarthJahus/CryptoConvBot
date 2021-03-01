@@ -16,18 +16,17 @@ from random import choices
 import constants as consts
 from Converter import convert, api_convert_coin
 import helperfunctions as Helper
-
 import api_nomics
 
 # Config
-__dev = "mohus_test"  # "test" for tests, "bot" for production
-__debug = False
+__dev = "jahus_test"  # "test" for tests, "bot" for production
+__debug = True
 config = Helper.load_file_json("config.json")
 
 # Enable logging
 logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-	level=logging.ERROR #CRITICAL
+	level=logging.ERROR  # CRITICAL
 )
 logger = logging.getLogger(__name__)
 
@@ -39,13 +38,12 @@ def get_advertisement():
 		if  consts.__advertisements[_item]["message"] is None:
 			_messages.append("")
 		else:
-			_messages.append("\n\n \[Ad] %s [%s](%s)" % (emojize( consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
+			_messages.append("\n\n%s [%s](%s)" % (emojize(consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
 		_rates.append( consts.__advertisements[_item]["rate"])
 	return choices(_messages, _rates)[0]
 
 
-def cmd_about(update : Update, context : CallbackContext):
-	"""Send a message when the command /start is issued."""
+def cmd_about(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_about"
 	_result = None
 	if update.effective_chat.type == "private":
@@ -68,7 +66,7 @@ def cmd_about(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
-def cmd_convert(update : Update, context : CallbackContext):
+def cmd_convert(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_convert"
 	if len(context.args) in [2, 3]:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
@@ -84,11 +82,11 @@ def cmd_convert(update : Update, context : CallbackContext):
 		Helper.log(_cmd_name, update, _result)
 
 
-def cmd_ticker(update : Update, context : CallbackContext):
+def cmd_ticker(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_ticker"
 	if len(context.args) == 1:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert([context.args[0], "btc"]) + "\n\n **Try the new /price command !**" + get_advertisement()
+		_message = convert([context.args[0], "btc"]) + "\n\n **Try the new `/price` command!**" + get_advertisement()
 	elif len(context.args) == 0:
 		_result = None
 		_message = None
@@ -100,8 +98,7 @@ def cmd_ticker(update : Update, context : CallbackContext):
 		Helper.log(_cmd_name, update, _result)
 
 
-
-def inline_query(update : Update, context : CallbackContext):
+def inline_query(update: Update, context: CallbackContext):
 	_cmd_name = "inline"
 	_result = None
 
@@ -155,21 +152,23 @@ def inline_query(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log_(_cmd_name, update.effective_user.id, "{inline}", _result)
 
 
-def cmd_price(update : Update, context : CallbackContext):
+def cmd_price(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_price"
 	if len(context.args) == 1:
 		_coin = context.args[0]
 		_message = api_nomics.get_coin_price(_coin) + get_advertisement()
 
-		context.bot.send_message(	update.effective_chat.id, 
-									_message, parse_mode=ParseMode.MARKDOWN, 
-									reply_to_message_id=update.message.message_id, 
-									disable_web_page_preview=True)
+		context.bot.send_message(
+			update.effective_chat.id,
+			_message, parse_mode=ParseMode.MARKDOWN,
+			reply_to_message_id=update.message.message_id,
+			disable_web_page_preview=True
+		)
 
 		Helper.log(_cmd_name, update, _message)							
 
 
-def cmd_help(update : Update, context : CallbackContext):
+def cmd_help(update: Update, context: CallbackContext):
 	"""Send a message when the command /help is issued."""
 	_cmd_name = "cmd_help"
 	_result = None
@@ -188,82 +187,7 @@ def cmd_help(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
-def event_group_join(update : Update):
-	"""Reply when a member joins the group."""
-	_greetings = True # Default behavior
-	if str(update.effective_chat.id) in config["greetings"]:
-		_greetings = config["greetings"][str(update.effective_chat.id)]
-	if _greetings:
-		if len(update.message.new_chat_members) == 1 and update.message.new_chat_member.is_bot:
-			update.message.reply_text(
-				"`0x4279652C20%s21`" % update.message.new_chat_member.username.encode("hex").upper(),
-				parse_mode=ParseMode.MARKDOWN,
-				quote=True
-			)
-		else:
-			update.message.reply_text(
-				"Hello, %s." % ', '.join([user.first_name for user in update.message.new_chat_members]),
-				quote=True
-			)
-
-
-def event_group_leave(update : Update):
-	"""Reply when a member leaves the group."""
-	_greetings = True # Default behavior
-	if str(update.effective_chat.id) in config["greetings"]:
-		_greetings = config["greetings"][str(update.effective_chat.id)]
-	if _greetings:
-		if update.message.left_chat_member.is_bot:
-			update.message.reply_text(
-				"`0x4279652C20%s21`" % update.message.left_chat_member.username.encode("hex").upper(),
-				parse_mode=ParseMode.MARKDOWN,
-				quote=True
-			)
-		else:
-			update.message.reply_text("Bye, %s." % update.message.left_chat_member.first_name, quote=True)
-
-
-def save_config():
-	Helper.save_file_json("config.json", config)
-
-
-def cmd_greetings(update : Update, context : CallbackContext):
-	"""Disable greetings """
-	_cmd_name = "cmd_greetings"
-	_result = None
-	if context.args[0].lower() == "on":
-		_activate = True
-	elif context.args[0].lower() == "off":
-		_activate = False
-	else:
-		_activate = None
-	_check_admins = False
-	_do = False
-	if update.effective_chat.type in ["group", "supergroup"] and _activate is not None:
-		if str(update.effective_chat.id) in config["greetings"]:
-			if config["greetings"][str(update.effective_chat.id)] is not _activate:
-				_check_admins = True
-		else:
-			_check_admins = True
-	if _check_admins:
-		if update.effective_chat.all_members_are_administrators:
-			_do = True
-			print("dew it")
-		else:
-			_admins = update.effective_chat.get_administrators() # Type: telegram.ChatMember
-			if update.effective_user.id in [admin.user.id for admin in _admins]:
-				_do = True
-				print("dew it")
-	if _do:
-		config["greetings"][str(update.effective_chat.id)] = _activate
-		save_config()
-		update.message.reply_text("%s done!" % emojize(":thumbsup:", use_aliases=True), parse_mode=ParseMode.MARKDOWN)
-		_result = "*greetings %s > %s" % (str(not _activate), str(_activate))
-	if _result is not None: Helper.log(_cmd_name, update, _result)
-
-
-
-def cmd_start(update : Update, context : CallbackContext):
+def cmd_start(update: Update, context: CallbackContext):
 	"""Send a message when the command /start is issued."""
 	_cmd_name = "cmd_start"
 	_result = None
@@ -271,9 +195,9 @@ def cmd_start(update : Update, context : CallbackContext):
 		# Check if deep link
 		if len(context.args) > 0:
 			if context.args[0].lower() == "about":
-				cmd_about(context.bot, update)
+				cmd_about(update, context)
 			elif context.args[0].lower() == "help":
-				cmd_help(context.bot, update)
+				cmd_help(update, context)
 			else:
 				_result = "*error__bad_deep_link"
 				update.message.reply_text(
@@ -286,7 +210,7 @@ def cmd_start(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
-def cmd_send_log(update : Update, context : CallbackContext):
+def cmd_send_log(update: Update, context: CallbackContext):
 	"""
 	Send logs to (admin) user
 	"""
@@ -307,7 +231,7 @@ def cmd_send_log(update : Update, context : CallbackContext):
 	if _result is not None: Helper.log(_cmd_name, update, _result)
 
 
-def error(update : Update, context : CallbackContext):
+def error(update: Update, context: CallbackContext):
 	"""Log Errors caused by Updates."""
 	logger.error('Update "%s" caused error "%s"', update, context.error)
 
@@ -323,18 +247,6 @@ def bot_set_handlers(dispatcher):
 	dispatcher.add_handler(CommandHandler("ticker", cmd_ticker))
 	dispatcher.add_handler(CommandHandler("get_log", cmd_send_log))
 	dispatcher.add_handler(InlineQueryHandler(inline_query))
-
-
-	#dispatcher.add_handler(CommandHandler("keskifichou", cmd_easter_egg))
-	#dispatcher.add_handler(CommandHandler("greetings", cmd_greetings, pass_args=True))
-		#dispatcher.add_handler(CommandHandler("price", cmd_price))		
-	#dispatcher.add_handler(CommandHandler("snap", cmd_snap)) BYEEEEEEE
-
-
-	# quand quelqu'un rejoint/quitte le chat
-	#dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, event_group_join))
-	#dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, event_group_leave))
-
 	# log all errors
 	dispatcher.add_error_handler(error)
 

@@ -4,6 +4,7 @@
     "bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec",
     "mohus_test": "1452700544:AAHVpc5rTNIoSKp-8j-oSI-3_bn6SOXKSb8"
   },
+  "run": "bot",
   "webhook": {
 	"enable": false,
 	"url": "",

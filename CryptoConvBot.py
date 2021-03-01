@@ -19,8 +19,7 @@ import helperfunctions as Helper
 import api_nomics
 
 # Config
-__dev = "jahus_test"  # "test" for tests, "bot" for production
-__debug = True
+__debug = False
 config = Helper.load_file_json("config.json")
 
 # Enable logging
@@ -253,7 +252,7 @@ def bot_set_handlers(dispatcher):
 
 def bot_init():
 	# Create the EventHandler and pass it your bot's token.
-	updater = Updater(config["token"][__dev], use_context=True)
+	updater = Updater(config["token"][config["run"]], use_context=True)
 	# Get the dispatcher to register handlers
 	bot_set_handlers(updater.dispatcher)
 	# Start the Bot
@@ -261,10 +260,10 @@ def bot_init():
 		updater.start_webhook(
 			listen="0.0.0.0",
 			port=config["webhook"]["port"],
-			url_path=config["token"][__dev],
+			url_path=config["token"][config["run"]],
 			key="server.key",
 			cert="server.pem",
-			webhook_url="%(url)s:%(port)s/" % (config["webhook"]) + config["token"][__dev]
+			webhook_url="%(url)s:%(port)s/" % (config["webhook"]) + config["token"][config["run"]]
 		)
 	else:
 		updater.start_polling(clean=True)

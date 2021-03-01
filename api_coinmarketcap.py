@@ -1,6 +1,7 @@
 # coding=utf-8
 import requests
 import time
+
 import helperfunctions as Helper
 import urllib3
 urllib3.disable_warnings()
@@ -10,6 +11,9 @@ urllib3.disable_warnings()
 __time_sync = 0
 __instantCoinList = []
 __sync_delay = 60*60
+
+# API_KEY
+CMC_API_KEY = "41993919-b681-41ff-8dca-837b48026de4"
 
 
 # charge le fichier en cache; s'il ne l'est pas (To-Do: Mettre un Time-out, pour resync)
@@ -35,14 +39,14 @@ def get_cmc_symbol(args):
 # obtient la liste des monnaies depuis le site, et enregistre en local la liste (id/symbole)
 def generate_cmc_coinlist():
 	try:
-		req = requests.get("https://api.coinmarketcap.com/v1/ticker/?limit=0") # limit 0 : liste toutes les monnaies
+		req = requests.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=5000", headers={'X-CMC_PRO_API_KEY' : CMC_API_KEY}) # liste toutes les monnaies
 		coinlist_tosave = {}
 		if len(req.json()) != 0:
-			for money in req.json():
-				coinlist_tosave[money["symbol"]]=[money["id"]]
+			for money in req.json()['data']:
+				coinlist_tosave[money["symbol"]]="%s" % str(money["id"])
 			# enregistrement de la liste des monnaies dispos
 			# cache/optimisation :D :D
-			Helper.save_file_json('cryptomarketcap_list.json',coinlist_tosave)
+			Helper.save_file_json('cryptomarketcap_list.json', coinlist_tosave)
 	except:
 		return {"success": False, "error": "Error from api_cryptomarketcap [list]"}
 
@@ -52,7 +56,7 @@ def get_snap(coin_0, coin_1):
 		# We take the symbol of the currency from the list
 		# Coin0 has to be sent UPPERCASE
 		_coin_0 = get_cmc_symbol(coin_0.upper())
-		req = requests.get("https://api.coinmarketcap.com/v1/ticker/%s/?convert=%s" % (_coin_0, coin_1.upper()))
+		req = requests.get("https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/%s/?convert=%s" % (_coin_0, coin_1.upper()))
 		if req.status_code != 200:
 			return {"success": False, "message": "Received error %s from CoinMarketCap" % req.status_code}
 		else:

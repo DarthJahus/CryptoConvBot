@@ -69,7 +69,7 @@ def cmd_convert(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_convert"
 	if len(context.args) in [2, 3]:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert(context.args) + get_advertisement()
+		_message = convert(context.args) + "\n\n **Try the new `/price` command!**" + get_advertisement()
 	elif len(context.args) == 0:
 		_result = None
 		_message = None

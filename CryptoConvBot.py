@@ -12,7 +12,7 @@ from datetime import datetime
 import time
 from random import choices
 import discord.ext.commands
-import threading
+import threading, asyncio
 
 
 # modularity [internal bot modules]
@@ -420,13 +420,15 @@ def telegram_bot_init():
 
 
 def discord_bot_init():
-	__bot.run(config["token"]["discord"])
-
+	_loop = asyncio.get_event_loop()
+	_loop.create_task(__bot.start(config["token"]["discord"]))  # use .start instead of .run, because .run is blocking
+	_thread = threading.Thread(target=_loop.run_forever, name="CC_Discord_loop", daemon=True)
+	return _thread
 
 def main():
 	try:
 		_services = list()
-		_services.append(threading.Thread(target=discord_bot_init, name="CC_Discord", daemon=True))
+		_services.append(discord_bot_init())
 		_services.append(threading.Thread(target=telegram_bot_init, name="CC_Telegram", daemon=True))
 		for _service in _services:
 			_service.start()

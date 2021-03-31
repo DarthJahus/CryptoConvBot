@@ -2,7 +2,8 @@
   "token": {
     "jahus_test": "196246475:AAHpX43r_WBRngm0vWOeqGy4zqCEIh4y6qw",
     "bot": "178947289:AAGbCykbstAGXwwMnPsfDMqoNRsiYA2zxec",
-    "mohus_test": "1452700544:AAHVpc5rTNIoSKp-8j-oSI-3_bn6SOXKSb8"
+    "mohus_test": "1452700544:AAHVpc5rTNIoSKp-8j-oSI-3_bn6SOXKSb8",
+	"discord": "ODI2Nzk3MzQ5Nzk5OTg1MTYy.YGRtCQ.6IxmCtyvmmrMUZAIjZpgMFfKqXU"
   },
   "run": "bot",
   "webhook": {

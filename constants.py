@@ -16,7 +16,7 @@ __help = {
 		"\n\n*%s Price:*\n`/price <coin>`\n::` /price DOT`"
 		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."
 		"\n:: `@CryptoConvBot DOGE BTC`\n:: `@CryptoConvBot 5 NEO EUR`"
-		"\n\n%s *Any question or suggestion?*\nContact @Jahus or @[censured]"
+		"\n\n%s *Any question or suggestion?*\nContact @Jahus"
 		"\n\n%s Use /about to learn more about me and my creators."
 		% (
 			emojize(":key:", use_aliases=True),
@@ -30,6 +30,18 @@ __help = {
 
 
 __advertisements = {
+	"nord_vpn": {
+		"message": "Be safe out there! Use a VPN.",
+		"rate": 0,
+		"emoji": ":earth_americas:",
+		"url": ""
+	},
+	"ai_marketing": {
+		"message": "Get $50 cash on ai.marketing.",
+		"rate": 15,
+		"emoji": ":robot:",
+		"url": "http://bit.ly/AIMarketing50"
+	},
 	"binance_20": {
 		"message": "Trade crypto on Binance",
 		"rate": 25,
@@ -44,7 +56,7 @@ __advertisements = {
 	},
 	"ledger_nano_s": {
 		"message": "Secure your coins: Use Ledger Nano S.",
-		"rate": 20,
+		"rate": 15,
 		"emoji": ":credit_card:",
 		"url": "https://bit.ly/LedgerNanoSJahus"
 	},
@@ -55,7 +67,7 @@ __advertisements = {
 		"url": "https://bit.ly/LedgerNanoXJahus"
 	},
 	"about": {
-		"rate": 10,
+		"rate": 0,
 		"emoji": ":coffee:",
 		"message": "Buy me a coffee!",
 		"url": "https://telegram.me/%s?start=about" % __bot_name

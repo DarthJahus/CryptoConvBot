@@ -11,16 +11,22 @@ urllib3.disable_warnings()
 from datetime import datetime
 import time
 from random import choices
+import discord.ext.commands
+import threading
+
 
 # modularity [internal bot modules]
 import constants as consts
-from Converter import convert, api_convert_coin
+import Converter
 import helperfunctions as Helper
 import api_nomics
+
 
 # Config
 __debug = False
 config = Helper.load_file_json("config.json")
+__bot = discord.ext.commands.Bot(command_prefix="cc/",help_command=None)
+
 
 # Enable logging
 logging.basicConfig(
@@ -30,15 +36,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_advertisement():
+def get_advertisement(raw=False):
 	_messages = []
 	_rates = []
 	for _item in consts.__advertisements:
-		if  consts.__advertisements[_item]["message"] is None:
+		if consts.__advertisements[_item]["message"] is None:
 			_messages.append("")
 		else:
-			_messages.append("\n\n%s [%s](%s)" % (emojize(consts.__advertisements[_item]["emoji"], use_aliases=True),  consts.__advertisements[_item]["message"],  consts.__advertisements[_item]["url"]))
-		_rates.append( consts.__advertisements[_item]["rate"])
+			if raw:
+				_messages.append([
+						emojize(consts.__advertisements[_item]["emoji"], use_aliases=True),
+						consts.__advertisements[_item]["message"],
+						consts.__advertisements[_item]["url"]
+					]
+				)
+			else:
+				_messages.append("\n\n%s [%s](%s)" % (
+						emojize(consts.__advertisements[_item]["emoji"], use_aliases=True),
+						consts.__advertisements[_item]["message"],
+						consts.__advertisements[_item]["url"]
+					)
+				)
+		_rates.append(consts.__advertisements[_item]["rate"])
 	return choices(_messages, _rates)[0]
 
 
@@ -69,14 +88,14 @@ def cmd_convert(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_convert"
 	if len(context.args) in [2, 3]:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert(context.args) + "\n\n **Try the new `/price` command!**" + get_advertisement()
+		_message = Converter.convert(context.args) + get_advertisement()
 	elif len(context.args) == 0:
 		_result = None
 		_message = None
 	else:
 		_result = "*error__invalid_query [%s]" % ", ".join(context.args).replace("\n", "\\n")
 		_message = "Invalid query.\n[See help](https://t.me/cryptoconvbot?start=help)"
-	if _result is not None:
+	if _result:
 		context.bot.send_message(update.effective_chat.id, _message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=update.message.message_id, disable_web_page_preview=True)
 		Helper.log(_cmd_name, update, _result)
 
@@ -85,7 +104,7 @@ def cmd_ticker(update: Update, context: CallbackContext):
 	_cmd_name = "cmd_ticker"
 	if len(context.args) == 1:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
-		_message = convert([context.args[0], "btc"]) + "\n\n **Try the new `/price` command!**" + get_advertisement()
+		_message = Converter.convert([context.args[0], "btc"]) + get_advertisement()
 	elif len(context.args) == 0:
 		_result = None
 		_message = None
@@ -108,7 +127,7 @@ def inline_query(update: Update, context: CallbackContext):
 
 	# on obtient les résultats de tous les exchanges (-query- contient la commande)
 	# query est transformé en liste pour être décodé comme -args-
-	convertion_results = api_convert_coin(query.split(), inline_call=True)
+	convertion_results = Converter.api_convert_coin(query.split(), inline_call=True)
 
 	# elle contiendra la liste des "articles" inline à afficher
 	results = list()
@@ -164,7 +183,7 @@ def cmd_price(update: Update, context: CallbackContext):
 			disable_web_page_preview=True
 		)
 
-		Helper.log(_cmd_name, update, _message)							
+		Helper.log(_cmd_name, update, _message)
 
 
 def cmd_help(update: Update, context: CallbackContext):
@@ -250,7 +269,134 @@ def bot_set_handlers(dispatcher):
 	dispatcher.add_error_handler(error)
 
 
-def bot_init():
+
+@__bot.command(aliases=["c", "conv"])
+async def convert(command: discord.ext.commands.Command, *args):
+	try:
+		if len(args) in [2, 3]:
+			_message = Converter.convert(args, raw=True)
+			_ad = get_advertisement(raw=True)
+			_embed = discord.Embed(
+				color=0x00003e
+			)
+			for _service in _message:
+				_embed.add_field(
+					name=_service,
+					value=_message[_service]
+				)
+			_embed.add_field(
+				name="Ad.",
+				value= "[%s %s](%s \"%s\")" % (_ad[0], _ad[1], _ad[2], "By clicking this link, you help us keep this bot free."),
+				inline=False
+			)
+			_embed.set_footer(
+				text="by CryptoConvBot",
+				icon_url="https://i.imgur.com/Nychk5I.png"
+			)
+			await command.message.reply(embed=_embed)
+			Helper.log_(
+				"discord:convert",
+				command.author.id,
+				command.guild.id,
+				result="embed"
+			)
+	except (discord.HTTPException, discord.Forbidden, discord.InvalidArgument) as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Error %s" % err
+		)
+	except Exception as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Unhandled error %s." % err
+		)
+
+
+@__bot.command(require_var_positional=True, ignore_extra=True, aliases=["t", "tick"])
+async def ticker(command: discord.ext.commands.Command, coin):
+	try:
+		_message = Converter.convert([coin, "btc"], raw=True)
+		_ad = get_advertisement(raw=True)
+		_embed = discord.Embed(
+			color=0x00003e
+		)
+		for _service in _message:
+			_embed.add_field(
+				name=_service,
+				value=_message[_service]
+			)
+		_embed.add_field(
+			name="Ad.",
+			value="[%s %s](%s \"%s\")" % (_ad[0], _ad[1], _ad[2], "By clicking this link, you help us keep this bot free."),
+			inline=False
+		)
+		_embed.set_footer(
+			text="by CryptoConvBot",
+			icon_url="https://i.imgur.com/Nychk5I.png"
+		)
+		await command.message.reply(embed=_embed)
+	except (discord.HTTPException, discord.Forbidden, discord.InvalidArgument) as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Error %s" % err
+		)
+	except Exception as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Unhandled error %s." % err
+		)
+
+
+@__bot.command(require_var_positional=True, ignore_extra=True, aliases=["p"])
+async def price(command: discord.ext.commands.Command, coin):
+	try:
+		_message = api_nomics.get_coin_price(coin, raw=True, price_trend=["<:stable:826885399568711740>","<:up:826885399875813376>","<:down:826885399590076416>"])
+		_ad = get_advertisement(raw=True)
+		_embed = discord.Embed(
+			title="%s - USD" % coin.upper(),
+			color=0x00003e
+		)
+		for _field in _message:
+			_embed.add_field(
+				name=_field,
+				value=_message[_field]
+			)
+		if _ad != "":
+			_embed.add_field(
+				name="Ad.",
+				value="[%s %s](%s \"%s\")" % (_ad[0], _ad[1], _ad[2], "By clicking this link, you help us keep this bot free."),
+				inline=False
+			)
+		_embed.set_footer(
+			text="by CryptoConvBot",
+			icon_url="https://i.imgur.com/Nychk5I.png"
+		)
+		await command.message.reply(embed=_embed)
+	except (discord.HTTPException, discord.Forbidden, discord.InvalidArgument) as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Error %s" % err
+		)
+	except Exception as err:
+		Helper.log_(
+			"discord:convert",
+			command.author.id,
+			command.guild.id,
+			result="Unhandled error %s." % err
+		)
+
+
+def telegram_bot_init():
 	# Create the EventHandler and pass it your bot's token.
 	updater = Updater(config["token"][config["run"]], use_context=True)
 	# Get the dispatcher to register handlers
@@ -270,14 +416,25 @@ def bot_init():
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT. This should be used most of the time, since
 	# start_polling() is non-blocking and will stop the bot gracefully.
-	updater.idle()
+	# updater.idle()
+
+
+def discord_bot_init():
+	__bot.run(config["token"]["discord"])
 
 
 def main():
-	"""Start the bot."""
-	bot_init()
-	# Generate a coin list from CoinMarketCap
-	#if not __debug: api_coinmarketcap.generate_cmc_coinlist()
+	try:
+		_services = list()
+		_services.append(threading.Thread(target=discord_bot_init, name="CC_Discord", daemon=True))
+		_services.append(threading.Thread(target=telegram_bot_init, name="CC_Telegram", daemon=True))
+		for _service in _services:
+			_service.start()
+		while threading.activeCount() > 1:
+			time.sleep(5)
+	except (KeyboardInterrupt, SystemExit):
+		exit()
+	# ToDo: Rate control. Without queue.
 
 
 if __name__ == '__main__':

@@ -49,7 +49,7 @@ def sign(value):
     return 0
 
 
-def get_coin_price(coin):
+def get_coin_price(coin, raw=False, price_trend=price_trend):
     if time.time() - _data_timestamp > 60:
         _update = get_nomics_prices()
         if not _update["success"]:
@@ -59,19 +59,27 @@ def get_coin_price(coin):
 
     if coin not in tokens_prices:
         return "Error: Can't find price for *%s*" % coin
-
-    _message = \
-        "*>> %s - USD*\n\n" \
-        "*Price*: `%s` `USD`.\n" \
-        "*1h change*: %s%%\n" \
-        "*1d change*: %s%%\n" \
-        "*7d change*: %s%%\n" \
-        "*Market cap.*: `%s` `USD`" % (
-            coin,
-            format_price(tokens_prices[coin]["price"]),
-            "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["1h-price-ch"])], tokens_prices[coin]["1h-price-ch"]),
-            "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["1d-price-ch"])], tokens_prices[coin]["1d-price-ch"]),
-            "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["7d-price-ch"])], tokens_prices[coin]["7d-price-ch"]),
-            f"{tokens_prices[coin]['market-cap']:,}"
-        )
-    return _message
+    if raw:
+        return {
+            "Price": "`%s`" % format_price(tokens_prices[coin]["price"]),
+            "1h change": "{} `{:=+7.2f}%`".format(price_trend[sign(tokens_prices[coin]["1h-price-ch"])], tokens_prices[coin]["1h-price-ch"]),
+            "1d change": "{} `{:=+7.2f}%`".format(price_trend[sign(tokens_prices[coin]["1d-price-ch"])], tokens_prices[coin]["1d-price-ch"]),
+            "7d change": "{} `{:=+7.2f}%`".format(price_trend[sign(tokens_prices[coin]["7d-price-ch"])], tokens_prices[coin]["7d-price-ch"]),
+            "Market cap": f"`{tokens_prices[coin]['market-cap']:,}` `USD`"
+        }
+    else:
+        _message = \
+            "*>> %s - USD*\n\n" \
+            "*Price*: `%s` `USD`.\n" \
+            "*1h change*: %s%%\n" \
+            "*1d change*: %s%%\n" \
+            "*7d change*: %s%%\n" \
+            "*Market cap.*: `%s` `USD`" % (
+                coin,
+                format_price(tokens_prices[coin]["price"]),
+                "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["1h-price-ch"])], tokens_prices[coin]["1h-price-ch"]),
+                "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["1d-price-ch"])], tokens_prices[coin]["1d-price-ch"]),
+                "{} `{:=+7.2f}`".format(price_trend[sign(tokens_prices[coin]["7d-price-ch"])], tokens_prices[coin]["7d-price-ch"]),
+                f"{tokens_prices[coin]['market-cap']:,}"
+            )
+        return _message

@@ -96,7 +96,6 @@ def api_convert_coin(args, inline_call):
 		if len(args) == 3:
 			try:
 				_value = float(args[0])
-				print("** api_convert_coin(): value = %.8f" % _value)
 			except:
 				print("** api_convert_coin(): Error while trying to get the value of args[0] (args[0] = %s)" % args[0])
 		try:
@@ -155,10 +154,8 @@ def api_convert_coin(args, inline_call):
 							_price = "%.4f" % _price
 
 				# Answer message body
-				_results[source["exchange"]] = "%s %s\n`%s = %s %s`"\
+				_results[source["exchange"]] = "`%s = %s %s`"\
 					% (
-						emoji.emojize(':white_small_square:'),
-						source["exchange"],
 						_unit_source,
 						_price,
 						_unit_target
@@ -179,7 +176,7 @@ def api_convert_coin(args, inline_call):
 			return {"success": False, "result": "All sources returned an error."}
 
 
-def convert(args):
+def convert(args, raw=False):
 	"""
 	Provide 2 or 3 args
 	And perform len(args) check BEFORE calling this function.
@@ -189,6 +186,11 @@ def convert(args):
 	if not results_tmp["success"]:
 		results.append("*Error :(*\n_%s_\nFailed to convert. Sorry." % results_tmp["result"])
 	else:
-		for service in results_tmp["result"]:
-			results.append(results_tmp["result"][service])
+		if raw:
+			return results_tmp["result"]
+		else:
+			for service in results_tmp["result"]:
+				results.append(
+					"%s %s\n%s" % (emoji.emojize(':white_small_square:'), service, results_tmp["result"][service])
+				)
 	return '\n'.join(results)

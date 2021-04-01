@@ -31,20 +31,20 @@ __help = {
 
 __advertisements = {
 	"nord_vpn": {
-		"message": "Be safe out there! Use a VPN.",
-		"rate": 0,
+		"message": "Be safe! Use a VPN.",
+		"rate": 10,
 		"emoji": ":earth_americas:",
-		"url": ""
+		"url": "http://bit.ly/CCNordVPN"
 	},
 	"ai_marketing": {
 		"message": "Get $50 cash on ai.marketing.",
-		"rate": 15,
+		"rate": 20,
 		"emoji": ":robot:",
 		"url": "http://bit.ly/AIMarketing50"
 	},
 	"binance_20": {
 		"message": "Trade crypto on Binance",
-		"rate": 25,
+		"rate": 20,
 		"emoji": ":money_bag:",
 		"url": "https://bit.ly/BinanceMohus"
 	},
@@ -56,7 +56,7 @@ __advertisements = {
 	},
 	"ledger_nano_s": {
 		"message": "Secure your coins: Use Ledger Nano S.",
-		"rate": 15,
+		"rate": 5,
 		"emoji": ":credit_card:",
 		"url": "https://bit.ly/LedgerNanoSJahus"
 	},

@@ -62,7 +62,7 @@ def get_advertisement(raw=False):
 
 
 def cmd_about(update: Update, context: CallbackContext):
-	_cmd_name = "cmd_about"
+	_cmd_name = "tg:cmd_about"
 	_result = None
 	if update.effective_chat.type == "private":
 		_result = "*msg__about"
@@ -85,7 +85,7 @@ def cmd_about(update: Update, context: CallbackContext):
 
 
 def cmd_convert(update: Update, context: CallbackContext):
-	_cmd_name = "cmd_convert"
+	_cmd_name = "tg:cmd_convert"
 	if len(context.args) in [2, 3]:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
 		_message = Converter.convert(context.args) + get_advertisement()
@@ -101,7 +101,7 @@ def cmd_convert(update: Update, context: CallbackContext):
 
 
 def cmd_ticker(update: Update, context: CallbackContext):
-	_cmd_name = "cmd_ticker"
+	_cmd_name = "tg:cmd_ticker"
 	if len(context.args) == 1:
 		_result = "[%s]" % ', '.join(context.args).replace('\n', '\\n')
 		_message = Converter.convert([context.args[0], "btc"]) + get_advertisement()
@@ -117,7 +117,7 @@ def cmd_ticker(update: Update, context: CallbackContext):
 
 
 def inline_query(update: Update, context: CallbackContext):
-	_cmd_name = "inline"
+	_cmd_name = "tg:inline"
 	_result = None
 
 	query = update.inline_query.query
@@ -171,7 +171,7 @@ def inline_query(update: Update, context: CallbackContext):
 
 
 def cmd_price(update: Update, context: CallbackContext):
-	_cmd_name = "cmd_price"
+	_cmd_name = "tg:cmd_price"
 	if len(context.args) == 1:
 		_coin = context.args[0]
 		_message = api_nomics.get_coin_price(_coin) + get_advertisement()
@@ -188,7 +188,7 @@ def cmd_price(update: Update, context: CallbackContext):
 
 def cmd_help(update: Update, context: CallbackContext):
 	"""Send a message when the command /help is issued."""
-	_cmd_name = "cmd_help"
+	_cmd_name = "tg:cmd_help"
 	_result = None
 	if update.effective_chat.type == "private":
 		_result = "*msg__help"
@@ -207,7 +207,7 @@ def cmd_help(update: Update, context: CallbackContext):
 
 def cmd_start(update: Update, context: CallbackContext):
 	"""Send a message when the command /start is issued."""
-	_cmd_name = "cmd_start"
+	_cmd_name = "tg:cmd_start"
 	_result = None
 	if update.effective_chat.type == "private":
 		# Check if deep link
@@ -232,7 +232,7 @@ def cmd_send_log(update: Update, context: CallbackContext):
 	"""
 	Send logs to (admin) user
 	"""
-	_cmd_name = "cmd_send_log"
+	_cmd_name = "tg:cmd_send_log"
 	_result = None
 	# Check if admin
 	if update.effective_chat.id in config["admins"]:

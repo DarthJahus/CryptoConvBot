@@ -339,16 +339,22 @@ async def ticker(command: discord.ext.commands.Command, coin):
 			icon_url="https://i.imgur.com/Nychk5I.png"
 		)
 		await command.message.reply(embed=_embed)
+		Helper.log_(
+			"discord:ticker",
+			command.author.id,
+			command.guild.id,
+			result="embed"
+		)
 	except (discord.HTTPException, discord.Forbidden, discord.InvalidArgument) as err:
 		Helper.log_(
-			"discord:convert",
+			"discord:ticker",
 			command.author.id,
 			command.guild.id,
 			result="Error %s" % err
 		)
 	except Exception as err:
 		Helper.log_(
-			"discord:convert",
+			"discord:ticker",
 			command.author.id,
 			command.guild.id,
 			result="Unhandled error %s." % err
@@ -380,16 +386,22 @@ async def price(command: discord.ext.commands.Command, coin):
 			icon_url="https://i.imgur.com/Nychk5I.png"
 		)
 		await command.message.reply(embed=_embed)
+		Helper.log_(
+			"discord:price",
+			command.author.id,
+			command.guild.id,
+			result="embed"
+		)
 	except (discord.HTTPException, discord.Forbidden, discord.InvalidArgument) as err:
 		Helper.log_(
-			"discord:convert",
+			"discord:price",
 			command.author.id,
 			command.guild.id,
 			result="Error %s" % err
 		)
 	except Exception as err:
 		Helper.log_(
-			"discord:convert",
+			"discord:price",
 			command.author.id,
 			command.guild.id,
 			result="Unhandled error %s." % err

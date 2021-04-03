@@ -78,7 +78,7 @@ __advertisements = {
 	},
 	"discord": {
 		"rate": 20,
-		"emoji": ":confeti:",
+		"emoji": ":confetti_ball:",
 		"message": "Add me on Discord!",
 		"url": "https://bit.ly/CryptoConvBotDiscord"
 	}

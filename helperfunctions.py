@@ -38,6 +38,16 @@ def log_(command, user_id, chat_id, result):
 def log(command, update, result):
 	log_(
 		command,
+		"%s|%s" % (update.effective_user.id, update.effective_user.language_code),
+		"%s|%s" % (update.effective_chat.id, update.effective_chat.type),
+		result.replace("\n","\\n")
+	)
+
+
+def log_full(command, update, result):
+	# removed as some names f* up with the logs
+	log_(
+		command,
 		"%s|@%s|%s|%s|%s" % (update.effective_user.id, update.effective_user.username, update.effective_user.first_name, update.effective_user.last_name, update.effective_user.language_code),
 		"%s|@%s|%s|%s" % (update.effective_chat.id, update.effective_chat.username, update.effective_chat.title, update.effective_chat.type),
 		result.replace("\n","\\n")

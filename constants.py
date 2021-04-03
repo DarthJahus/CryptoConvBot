@@ -31,16 +31,16 @@ __help = {
 
 __advertisements = {
 	"nord_vpn": {
-		"message": "Be safe! Use a VPN.",
+		"message": "Secure your connection with NordVPN.",
 		"rate": 10,
 		"emoji": ":earth_americas:",
-		"url": "http://bit.ly/CCNordVPN"
+		"url": "https://bit.ly/CCNordVPN"
 	},
 	"ai_marketing": {
 		"message": "Get $50 cash on ai.marketing.",
 		"rate": 20,
 		"emoji": ":robot:",
-		"url": "http://bit.ly/AIMarketing50"
+		"url": "https://bit.ly/AIMarketing50"
 	},
 	"binance_20": {
 		"message": "Trade crypto on Binance",
@@ -73,8 +73,14 @@ __advertisements = {
 		"url": "https://telegram.me/%s?start=about" % __bot_name
 	},
 	"nothing": {
-		"rate": 20,
+		"rate": 0,
 		"message": None
+	},
+	"discord": {
+		"rate": 20,
+		"emoji": ":confeti:",
+		"message": "Add me on Discord!",
+		"url": "https://bit.ly/CryptoConvBotDiscord"
 	}
 }
 

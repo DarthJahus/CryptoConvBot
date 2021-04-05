@@ -61,7 +61,7 @@ __advertisements = {
 		"url": "https://bit.ly/LedgerNanoSJahus"
 	},
 	"ledger_nano_x": {
-		"rate": 5,
+		"rate": 0,
 		"emoji": ":credit_card:",
 		"message": "Hold your crypto securly. Use Ledger Nano X.",
 		"url": "https://bit.ly/LedgerNanoXJahus"
@@ -81,6 +81,12 @@ __advertisements = {
 		"emoji": ":confetti_ball:",
 		"message": "Add me on Discord!",
 		"url": "https://bit.ly/CryptoConvBotDiscord"
+	},
+	"free_bitcoin": {
+		"rate": 20,
+		"emoji": ":money_bag:",
+		"message": "The best Bitcoin faucet.",
+		"url": "http://bit.ly/CCFreeBTC"
 	}
 }
 

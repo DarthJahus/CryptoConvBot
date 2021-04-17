@@ -32,25 +32,25 @@ __help = {
 __advertisements = {
 	"nord_vpn": {
 		"message": "Secure your connection with NordVPN.",
-		"rate": 5,
+		"rate": 1,
 		"emoji": ":earth_americas:",
 		"url": "https://bit.ly/CCNordVPN"
 	},
 	"ai_marketing": {
 		"message": "Get $50 cash on ai.marketing.",
-		"rate": 20,
+		"rate": 22,
 		"emoji": ":robot:",
 		"url": "https://bit.ly/AIMarketing50"
 	},
 	"binance_20": {
 		"message": "Trade crypto on Binance",
-		"rate": 20,
+		"rate": 25,
 		"emoji": ":money_bag:",
 		"url": "https://bit.ly/BinanceMohus"
 	},
 	"binance_15": {
-		"message": "Trade crypto on Binance (-10% transcation fee)",
-		"rate": 20,
+		"message": "Trade crypto on Binance (+bonus)",
+		"rate": 15,
 		"emoji": ":money_bag:",
 		"url" : "https://bit.ly/BinanceMohus15"
 	},
@@ -83,7 +83,7 @@ __advertisements = {
 		"url": "http://bit.ly/CryptoConvBotGraph"
 	},
 	"free_bitcoin": {
-		"rate": 20,
+		"rate": 22,
 		"emoji": ":money_bag:",
 		"message": "The best Bitcoin faucet.",
 		"url": "http://bit.ly/CCFreeBTC"

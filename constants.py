@@ -32,7 +32,7 @@ __help = {
 __advertisements = {
 	"nord_vpn": {
 		"message": "Secure your connection with NordVPN.",
-		"rate": 10,
+		"rate": 5,
 		"emoji": ":earth_americas:",
 		"url": "https://bit.ly/CCNordVPN"
 	},
@@ -73,14 +73,14 @@ __advertisements = {
 		"url": "https://telegram.me/%s?start=about" % __bot_name
 	},
 	"nothing": {
-		"rate": 0,
+		"rate": 5,
 		"message": None
 	},
 	"discord": {
 		"rate": 20,
 		"emoji": ":confetti_ball:",
 		"message": "Add me on Discord!",
-		"url": "https://bit.ly/CryptoConvBotDiscord"
+		"url": "http://bit.ly/CryptoConvBotGraph"
 	},
 	"free_bitcoin": {
 		"rate": 20,

@@ -81,7 +81,7 @@ __advertisements = {
 		"rate": 20,
 		"emoji": ":confetti_ball:",
 		"message": "Add me on Discord!",
-		"url": "http://bit.ly/CryptoConvBotGraph"
+		"url": "http://bit.ly/CCDiscordWiki"
 	},
 	"free_bitcoin": {
 		"rate": 22,

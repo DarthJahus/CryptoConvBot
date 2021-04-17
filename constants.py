@@ -12,6 +12,7 @@ __DONATION_BTC = "1EnQoCTGBgeQfDKqEWzyQLaKWQbP2YR1uU"
 __help = {
 	"en":
 		"*HELP* %s\n\n"
+		"[Check the Wiki for detailed help](https://github.com/DarthJahus/CryptoConvBot/wiki)\n\n"
 		"*%s Conversion:*\n`/convert [amount] <coin1> <coin2>`\n::` /convert ETH USD`\n::` /convert 3 ETC USD`"
 		"\n\n*%s Price:*\n`/price <coin>`\n::` /price DOT`"
 		"\n\n%s *Inline mode:*\nYou can summon me from any chat by writing `@CryptoConvBot`."

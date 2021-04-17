@@ -192,7 +192,7 @@ def cmd_help(update: Update, context: CallbackContext):
 	_result = None
 	if update.effective_chat.type == "private":
 		_result = "*msg__help"
-		update.message.reply_text(consts.__help["en"], parse_mode=ParseMode.MARKDOWN, quote=True)
+		update.message.reply_text(consts.__help["en"], parse_mode=ParseMode.MARKDOWN, quote=True, disable_web_page_preview=True)
 	else:
 		_result = "*error__private_command_in_public"
 		update.message.reply_text(

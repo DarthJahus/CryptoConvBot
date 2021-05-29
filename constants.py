@@ -57,7 +57,7 @@ __advertisements = {
 	},
 	"ledger_nano_s": {
 		"message": "Secure your coins: Use Ledger Nano S.",
-		"rate": 5,
+		"rate": 0,
 		"emoji": ":credit_card:",
 		"url": "https://bit.ly/LedgerNanoSJahus"
 	},
@@ -78,7 +78,7 @@ __advertisements = {
 		"message": None
 	},
 	"discord": {
-		"rate": 20,
+		"rate": 10,
 		"emoji": ":confetti_ball:",
 		"message": "Add me on Discord!",
 		"url": "http://bit.ly/CCDiscordWiki"
@@ -88,6 +88,12 @@ __advertisements = {
 		"emoji": ":money_bag:",
 		"message": "The best Bitcoin faucet.",
 		"url": "http://bit.ly/CCFreeBTC"
+	},
+	"honey": {
+		"rate": 15,
+		"emoji": ":honey_pot:",
+		"message": "Best promo codes with Honey.",
+		"url": "https://bit.ly/CCJoinHoney"
 	}
 }
 
